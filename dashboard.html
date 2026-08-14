@@ -846,60 +846,61 @@
 
         <div class="kpi-card">
             <div>
-                <div class="kpi-label">Pièces Comptées</div>
-                <div class="kpi-value lime" id="val-total-parts">0</div>
+                <div class="kpi-label">Quantité Totale</div>
+                <div class="kpi-value lime" id="val-total-target">0</div>
             </div>
 
             <div class="kpi-desc">
-                <i class="fa-solid fa-arrow-trend-up"></i>
-                Total cumulé de la session
+                <i class="fa-solid fa-boxes-stacked"></i>
+                Cible Excel du produit référencé
             </div>
         </div>
 
-
         <div class="kpi-card">
             <div>
-                <div class="kpi-label">Produit Actuel</div>
-                <div class="kpi-value"
-                     id="val-active-product"
-                     style="font-size:1.2rem;">
-                    -
-                </div>
+                <div class="kpi-label">Quantité Détectée</div>
+                <div class="kpi-value" id="val-detected-qty">0</div>
             </div>
 
             <div class="kpi-desc">
-                <i class="fa-solid fa-tag"></i>
-                Dernière classe détectée
+                <i class="fa-solid fa-camera"></i>
+                Pièces réellement capturées
             </div>
         </div>
 
-
         <div class="kpi-card">
             <div>
-                <div class="kpi-label">TRP Moyen Global</div>
-                <div class="kpi-value lime" id="val-avg-fill">
-                    0%
-                </div>
+                <div class="kpi-label">Rendement</div>
+                <div class="kpi-value lime" id="val-yield">0%</div>
             </div>
 
             <div class="kpi-desc">
-                <i class="fa-solid fa-chart-pie"></i>
-                Taux de remplissage moyen
+                <i class="fa-solid fa-percent"></i>
+                Quantité détectée / quantité totale
             </div>
         </div>
 
-
         <div class="kpi-card">
             <div>
-                <div class="kpi-label">TRP Produit Actuel</div>
-                <div class="kpi-value lime" id="val-trp-product">
-                    0%
-                </div>
+                <div class="kpi-label">Chargement Total</div>
+                <div class="kpi-value" id="val-total-load">0%</div>
             </div>
 
             <div class="kpi-desc">
-                <i class="fa-solid fa-bullseye"></i>
-                Moyenne TRP par produit
+                <i class="fa-solid fa-bolt"></i>
+                Charge globale de production
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Jigs / Kits Requis</div>
+                <div class="kpi-value lime" id="val-jigs-required">0 / 0</div>
+            </div>
+
+            <div class="kpi-desc">
+                <i class="fa-solid fa-warehouse"></i>
+                Référence base de données Excel
             </div>
         </div>
 
@@ -916,7 +917,7 @@
 
                 <div class="panel-title">
                     <i class="fa-solid fa-list-check"></i>
-                    Historique des Mesures (50 dernières)
+                    Historique des Mesures
                 </div>
 
             </div>
@@ -933,9 +934,9 @@
                                 <th>ID</th>
                                 <th>Date &amp; Heure</th>
                                 <th>Produit</th>
-                                <th>Quantité</th>
-                                <th>Confiance moy.</th>
-                                <th>TRP</th>
+                                <th>Détecté</th>
+                                <th>Totale</th>
+                                <th>Rendement</th>
                             </tr>
 
                         </thead>
@@ -1065,7 +1066,7 @@
 
 
                             <span class="sim-info-label">
-                                Taux de Remplissage:
+                                Rendement Produit:
                             </span>
 
                             <span class="sim-info-val"
@@ -1075,7 +1076,7 @@
 
 
                             <span class="sim-info-label">
-                                TRP Produit:
+                                Quantité Totale Réf.:
                             </span>
 
                             <span class="sim-info-val"
@@ -1254,6 +1255,193 @@
     let scanCounter = 0;
 
     window.productTotals = {};
+    window.baseReference = {};
+    window.baseReferenceIndex = {};
+
+    function normalizeProductKey(value) {
+        return String(value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[\/_\\-]+/g, ' ')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function buildProductAliasVariants(value) {
+        const aliases = new Set();
+        const raw = String(value || '').trim();
+        if (!raw) return aliases;
+
+        const normalized = normalizeProductKey(raw);
+        const compact = raw.replace(/[\s_\-/\\]+/g, '');
+
+        aliases.add(raw);
+        aliases.add(normalized);
+        aliases.add(raw.replace(/[_/\\-]+/g, ' '));
+        aliases.add(raw.replace(/[_/\\-]+/g, ' ').replace(/\s+/g, ' '));
+        aliases.add(normalized.replace(/\s+/g, '_'));
+        aliases.add(compact);
+
+        const tokens = normalized.split(' ').filter(Boolean);
+        if (tokens.length) {
+            aliases.add(tokens.join(' '));
+            aliases.add(tokens.join('_'));
+            aliases.add(tokens[0]);
+            aliases.add(tokens[tokens.length - 1]);
+        }
+
+        if (tokens.length > 1) {
+            aliases.add(tokens.slice(1).join(' '));
+            aliases.add(tokens.slice(1).join('_'));
+            aliases.add(tokens.slice(0, -1).join(' '));
+            aliases.add(tokens.slice(0, -1).join('_'));
+        }
+
+        return aliases;
+    }
+
+    function getReferenceQuantityForProduct(productName) {
+        const ref = findReferenceForProduct(productName) || window.baseReference?.[String(productName || '').trim()] || null;
+        if (!ref) return 0;
+
+        const candidates = [
+            ref.quantite,
+            ref.quantite_totale,
+            ref['quantite kits'],
+            ref['quantite kits / balancelle'],
+            ref['qte annuel'],
+            ref['quantite annuelle'],
+            ref.qty,
+            ref.quantity
+        ];
+
+        for (const value of candidates) {
+            const qty = Number(value);
+            if (Number.isFinite(qty) && qty >= 0) {
+                return qty;
+            }
+        }
+
+        return Number(ref.quantite || 0);
+    }
+
+    function findReferenceForProduct(productName) {
+        const refIndex = window.baseReferenceIndex || {};
+        const baseRef = window.baseReference || {};
+        const name = String(productName || '').trim();
+        if (!name) return null;
+
+        const normalized = normalizeProductKey(name);
+        if (!normalized) return null;
+
+        const aliasCandidates = [...buildProductAliasVariants(name)];
+
+        for (const alias of aliasCandidates) {
+            const direct = baseRef[String(alias).trim()];
+            if (direct) return direct;
+
+            const exact = refIndex[normalizeProductKey(alias)];
+            if (exact) return exact;
+        }
+
+        const candidates = Object.keys(refIndex);
+        let bestMatch = null;
+        let bestScore = 0;
+
+        candidates.forEach((key) => {
+            if (!key) return;
+
+            const keyTokens = key.split(' ').filter(Boolean);
+            const targetTokens = normalized.split(' ').filter(Boolean);
+            const exactContains = key.includes(normalized) || normalized.includes(key);
+            const tokenOverlap = targetTokens.filter(token => keyTokens.includes(token)).length;
+            const suffixMatch = key.endsWith(normalized) || normalized.endsWith(key);
+            const lastTokenMatch = keyTokens.includes(targetTokens[targetTokens.length - 1]);
+
+            let score = 0;
+            if (exactContains) score += 55;
+            if (suffixMatch) score += 30;
+            if (lastTokenMatch) score += 25;
+            if (tokenOverlap > 0) score += tokenOverlap * 25;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = refIndex[key];
+            }
+        });
+
+        return bestScore >= 20 ? bestMatch : null;
+    }
+
+    async function loadBaseDonneesFromServer() {
+        try {
+            const response = await fetch('/api/base-donnees');
+            const payload = await response.json();
+            if (!payload || !payload.success || !Array.isArray(payload.data)) {
+                window.baseReference = {};
+                window.baseReferenceIndex = {};
+                return;
+            }
+
+            const refMap = {};
+            const refIndex = {};
+            payload.data.forEach((row) => {
+                const produit = String(row.produit || '').trim();
+                if (!produit) return;
+
+                const quantityCandidates = [
+                    row.quantite,
+                    row.quantite_totale,
+                    row['quantite kits'],
+                    row['quantite kits / balancelle'],
+                    row['quantite annuelle'],
+                    row['qte annuel'],
+                    row.qty,
+                    row.quantity,
+                    row['Nombre Kits / jigs'],
+                    row['Quantité kits / balancelle']
+                ];
+
+                const quantite = quantityCandidates.reduce((best, value) => {
+                    const parsed = Number(value);
+                    return Number.isFinite(parsed) && parsed > best ? parsed : best;
+                }, 0);
+
+                const jigs = Number(row.jigs || row['Nombre jigs/balancelle'] || 0);
+                const kits = Number(row.kits || row['Nombre Kits / jigs'] || 0);
+
+                const canonical = {
+                    produit,
+                    quantite: Number(quantite) || 0,
+                    jigs: Number(jigs) || 0,
+                    kits: Number(kits) || 0,
+                    sheet: row.sheet || 'Excel'
+                };
+
+                const aliases = buildProductAliasVariants(produit);
+
+                aliases.forEach((alias) => {
+                    const cleanAlias = String(alias || '').trim();
+                    if (!cleanAlias) return;
+                    refMap[cleanAlias] = canonical;
+                    refIndex[normalizeProductKey(cleanAlias)] = canonical;
+                });
+
+                refMap[normalizeProductKey(produit)] = canonical;
+                refIndex[normalizeProductKey(produit)] = canonical;
+            });
+
+            window.baseReference = refMap;
+            window.baseReferenceIndex = refIndex;
+            calculateStats();
+        } catch (error) {
+            console.error('Erreur chargement base Excel:', error);
+            window.baseReference = {};
+            window.baseReferenceIndex = {};
+        }
+    }
 
 
     // ============================================================
@@ -1368,6 +1556,7 @@
 
 
         initChart();
+        loadBaseDonneesFromServer();
 
         updateCameraStatus(false);
         refreshCameraDevices();
@@ -1535,77 +1724,73 @@
 
     function calculateStats() {
 
-        if (readings.length === 0) {
-            return;
-        }
+        const totalTarget = Object.values(window.baseReference || {})
+            .reduce((sum, entry) => sum + (Number(entry.quantite) || 0), 0);
 
-
-        const productTotals = {};
-
-
+        const productMap = {};
         readings.forEach(r => {
-
-            if (
-                !productTotals[r.produit] ||
-                productTotals[r.produit] < r.quantite_totale
-            ) {
-
-                productTotals[r.produit] =
-                    r.quantite_totale;
-
+            const product = String(r.produit || '').trim();
+            if (!product) return;
+            if (!productMap[product]) {
+                productMap[product] = 0;
             }
-
+            productMap[product] += Number(r.quantite ?? 0);
         });
 
+        const totalDetected = Object.values(productMap).reduce((sum, value) => sum + value, 0);
+        const productList = Object.entries(productMap).sort((a, b) => b[1] - a[1]);
+        const latestProduct = productList[0]?.[0] || '—';
+        const referenceEntry = findReferenceForProduct(latestProduct) || window.baseReference?.[latestProduct] || null;
+        const currentTarget = getReferenceQuantityForProduct(latestProduct);
+        const currentDetected = productMap[latestProduct] || 0;
 
-        const totalParts =
-            Object.values(productTotals)
-                .reduce((sum, val) => sum + val, 0);
+        const yieldRate = totalTarget > 0 ? Math.round((totalDetected / totalTarget) * 100) : 0;
+        const currentLoad = currentTarget > 0 ? Math.round((currentDetected / currentTarget) * 100) : 0;
+
+        document.getElementById('val-total-target').textContent = totalTarget || 0;
+        document.getElementById('val-detected-qty').textContent = totalDetected || 0;
+        document.getElementById('val-yield').textContent = `${yieldRate}%`;
+        document.getElementById('val-total-load').textContent = `${Math.min(100, yieldRate)}%`;
+
+        const jigs = referenceEntry?.jigs || 0;
+        const kits = referenceEntry?.kits || 0;
+        document.getElementById('val-jigs-required').textContent = `${jigs || 0} / ${kits || 0}`;
+
+        document.getElementById('val-active-product').textContent = latestProduct;
+
+        const infoQty = document.getElementById('info-qty');
+        if (infoQty) infoQty.textContent = `${currentDetected || 0} pièce(s)`;
+
+        const infoRate = document.getElementById('info-rate');
+        if (infoRate) infoRate.textContent = `${currentLoad}%`;
+
+        const infoTrp = document.getElementById('info-trp');
+        if (infoTrp) infoTrp.textContent = `${currentTarget || 0}`;
+
+        const statusEl = document.getElementById('info-status');
+        if (statusEl) {
+            statusEl.innerHTML = currentLoad >= 90
+                ? '<span class="badge badge-green">CHARGÉ</span>'
+                : currentLoad >= 60
+                    ? '<span class="badge badge-amber">EN COURS</span>'
+                    : '<span class="badge badge-lime">À DÉMARRER</span>';
+        }
+
+    }
 
 
-        document.getElementById('val-total-parts').textContent =
-            totalParts || 0;
+    // ============================================================
+    // CAPTURED QUANTITY HELPERS
+    // ============================================================
 
+    function getCapturedQuantityFromCountMap(countMap) {
 
-        const latest = readings[0];
-
-
-        document.getElementById('val-active-product').textContent =
-            latest.produit;
-
-
-        const totalRate =
-            readings.reduce((sum, r) => {
-
-                const parsed =
-                    parseFloat(
-                        r.taux.replace('%', '')
-                    );
-
-                return sum +
-                    (isNaN(parsed) ? 0 : parsed);
-
-            }, 0);
-
-
-        const avgRate =
-            Math.round(
-                totalRate / readings.length
+        return Object.values(countMap || {})
+            .reduce(
+                (sum, value) =>
+                    sum + (Number(value) || 0),
+                0
             );
-
-
-        document.getElementById('val-avg-fill').textContent =
-            `${avgRate}%`;
-
-
-        const trpVal =
-            trpMap[latest.produit];
-
-
-        document.getElementById('val-trp-product').textContent =
-            trpVal !== undefined
-                ? `${trpVal}%`
-                : '-';
 
     }
 
@@ -1686,7 +1871,7 @@
 
 
             label.textContent =
-                `${detection.product} ${(detection.confidence * 100).toFixed(1)}%`;
+                `${detection.product}`;
 
 
             box.appendChild(label);
@@ -1792,94 +1977,79 @@
     // RECORD DETECTIONS
     // ============================================================
 
+    function normalizeQuantityValue(value) {
+        if (value === null || value === undefined || value === '') {
+            return 0;
+        }
+
+        if (typeof value === 'number') {
+            return Number.isFinite(value) ? value : 0;
+        }
+
+        const sanitized = String(value).replace(/[^0-9.,-]/g, '').replace(',', '.');
+        const parsed = Number(sanitized);
+        return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function normalizeHeader(label) {
+        return String(label || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function getCellByAliases(row, aliases) {
+        const keys = Object.keys(row || {});
+
+        for (const key of keys) {
+            const normalized = normalizeHeader(key);
+            const match = aliases.some(alias => normalized.includes(alias));
+            if (match) {
+                return row[key];
+            }
+        }
+
+        return undefined;
+    }
+
     function recordDetections(counts, detections) {
 
         const now = new Date();
 
+        Object.entries(counts).forEach(([product, quantity]) => {
+            window.productTotals[product] = (window.productTotals[product] || 0) + quantity;
 
-        Object.entries(counts).forEach(
-            ([product, quantity]) => {
-
-                window.productTotals[product] =
-                    (window.productTotals[product] || 0)
-                    + quantity;
-
-
-                const productDetections =
-                    detections.filter(
-                        d => d.product === product
-                    );
-
-
-                const confidence =
-                    Math.round(
-
-                        productDetections.reduce(
-                            (sum, d) =>
-                                sum + d.confidence,
-                            0
-                        )
-                        /
-                        productDetections.length
-                        *
-                        100
-
-                    );
-
-
-                scanCounter++;
-
-
-                const reading = {
-
-                    id:
-                        `VAL-${String(scanCounter).padStart(4, '0')}`,
-
-                    date:
-                        now.toLocaleDateString('fr-FR'),
-
-                    heure:
-                        now.toLocaleTimeString('fr-FR'),
-
-                    produit:
-                        product,
-
-                    quantite:
-                        quantity,
-
-                    quantite_totale:
-                        window.productTotals[product],
-
-                    taux:
-                        `${confidence}%`
-
-                };
-
-
-                readings.unshift(reading);
-
-
-                insertRow(
-                    reading,
-                    true
-                );
-
+            const existingIndex = readings.findIndex(r => String(r.produit || '').trim() === product);
+            if (existingIndex !== -1) {
+                readings[existingIndex].quantite += quantity;
+                readings[existingIndex].quantite_totale = (readings[existingIndex].quantite_totale || 0) + quantity;
+                readings[existingIndex].date = now.toLocaleDateString('fr-FR');
+                readings[existingIndex].heure = now.toLocaleTimeString('fr-FR');
+                readings[existingIndex].taux = `${Math.min(100, Math.max(0, readings[existingIndex].quantite))}%`;
+                return;
             }
-        );
 
+            const reading = {
+                id: `VAL-${String(++scanCounter).padStart(4, '0')}`,
+                date: now.toLocaleDateString('fr-FR'),
+                heure: now.toLocaleTimeString('fr-FR'),
+                produit: product,
+                quantite: quantity,
+                quantite_totale: window.productTotals[product],
+                taux: `${quantity}`
+            };
 
-        readings =
-            readings.slice(0, 50);
+            readings.unshift(reading);
+            insertRow(reading, true);
+        });
 
-
-        trpMap =
-            computeLocalTRP();
-
-
+        readings = readings.slice(0, 50);
+        trpMap = computeLocalTRP();
         rebuildTableTRP();
-
         calculateStats();
-
         updateChart();
 
     }
@@ -2042,32 +2212,26 @@
 
             // Quantity
 
+            const capturedQuantity =
+                getCapturedQuantityFromCountMap(
+                    data.counts || {}
+                );
+
             document.getElementById(
                 'info-qty'
             ).textContent =
-                `${detections.length} produit(s)`;
+                capturedQuantity
+                    ? `${capturedQuantity} pièce(s)`
+                    : '0 pièce';
 
 
-            // Confidence
+            // Captured quantity in the photo
 
             document.getElementById(
                 'info-rate'
             ).textContent =
-
-                detections.length
-
-                    ? `${Math.round(
-                        detections.reduce(
-                            (s, d) =>
-                                s + d.confidence,
-                            0
-                        )
-                        /
-                        detections.length
-                        *
-                        100
-                    )}%`
-
+                capturedQuantity
+                    ? `${capturedQuantity}`
                     : '-';
 
 
@@ -2252,42 +2416,18 @@
         }
 
 
-        const rateVal =
-            parseFloat(
-                r.taux.replace('%', '')
-            );
+        const trackedQty = Number(r.quantite || 0);
+        const refRow = findReferenceForProduct(r.produit) || window.baseReference?.[r.produit] || null;
+        const totalRef = Number(refRow?.quantite || 0);
+        const rateVal = totalRef > 0 ? Math.min(100, Math.round((trackedQty / totalRef) * 100)) : 0;
 
-
-        let badgeClass =
-            'badge-lime';
-
+        let badgeClass = 'badge-lime';
 
         if (rateVal >= 100) {
-
-            badgeClass =
-                'badge-green';
-
+            badgeClass = 'badge-green';
         } else if (rateVal > 0) {
-
-            badgeClass =
-                'badge-amber';
-
+            badgeClass = 'badge-amber';
         }
-
-
-        const localTRP =
-            computeLocalTRP();
-
-
-        const trpVal =
-            r.trp ||
-
-            (
-                localTRP[r.produit] !== undefined
-                    ? `${localTRP[r.produit]}%`
-                    : '-'
-            );
-
 
         const fillClass =
             rateVal >= 100
@@ -2295,7 +2435,6 @@
                 : rateVal > 50
                     ? 'amber'
                     : 'lime';
-
 
         tr.innerHTML = `
 
@@ -2325,38 +2464,18 @@
             </td>
 
             <td>
-
-                ${r.quantite}
-
-                <small style="color:var(--muted)">
-                    (Total: ${r.quantite_totale})
-                </small>
-
+                ${trackedQty}
             </td>
 
             <td>
+                ${totalRef || 0}
+            </td>
 
+            <td>
                 <div class="progress-bar-container">
-
-                    <div
-                        class="progress-bar-fill ${fillClass}"
-                        style="width:${Math.min(rateVal,100)}%"
-                    ></div>
-
+                    <div class="progress-bar-fill ${fillClass}" style="width:${Math.min(rateVal,100)}%"></div>
                 </div>
-
-                <span class="badge ${badgeClass}">
-                    ${r.taux}
-                </span>
-
-            </td>
-
-            <td>
-
-                <span class="trp-badge">
-                    ${trpVal}
-                </span>
-
+                <span class="badge ${badgeClass}">${rateVal}%</span>
             </td>
 
         `;
@@ -2631,4 +2750,3 @@
 
 </body>
 </html>
-```

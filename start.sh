@@ -50,7 +50,7 @@ echo -e "${NC}"
 # ================= ROBOfLOW KEY =================
 
 export VALEO_ROBOFLOW_API_KEY="dQudu2taTYXhZN8DmqZo"
-
+export VALEO_ROBOFLOW_SECOND_API_KEY="KeCJQZgmePtugUhbMNTC"
 
 
 # =================================================
