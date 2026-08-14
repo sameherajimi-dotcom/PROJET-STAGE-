@@ -1,0 +1,2634 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VALEO - Dashboard</title>
+
+<!-- Google Fonts & FontAwesome -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    :root {
+        --valeo-lime: #B9FF00;
+        --valeo-blue: #1F404E;
+        --background: #080A0B;
+        --card: #101314;
+        --input: #181C1E;
+        --text: #FFFFFF;
+        --muted: #8C9498;
+        --border: rgba(255, 255, 255, 0.08);
+        --accent-green: #00cc66;
+        --accent-amber: #dbb95c;
+        --accent-red: #ff4444;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--background);
+        min-height: 100vh;
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .background {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(ellipse at 20% 50%, rgba(185, 255, 0, 0.04) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 50%, rgba(31, 64, 78, 0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 0%, rgba(185, 255, 0, 0.03) 0%, transparent 40%);
+    }
+
+    .grid {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+            linear-gradient(rgba(185, 255, 0, 0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(185, 255, 0, 0.025) 1px, transparent 1px);
+        background-size: 50px 50px;
+        mask-image: radial-gradient(ellipse at center, black, transparent 80%);
+        z-index: 0;
+    }
+
+    .glow {
+        position: fixed;
+        width: 450px;
+        height: 450px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--valeo-lime);
+        opacity: 0.025;
+        filter: blur(150px);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    header {
+        position: relative;
+        z-index: 100;
+        background: var(--card);
+        border-bottom: 1px solid var(--border);
+        padding: 0.875rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        gap: 1rem;
+        flex-wrap: wrap;
+        position: sticky;
+        top: 0;
+    }
+
+    .header-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .header-title img {
+        width: 40px;
+        height: auto;
+        filter: drop-shadow(0 0 10px rgba(185, 255, 0, 0.08));
+    }
+
+    .header-title h1 {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--valeo-lime);
+        letter-spacing: 3px;
+        text-shadow: 0 0 10px rgba(185, 255, 0, 0.08);
+    }
+
+    .header-nav {
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
+        background: var(--background);
+        border-radius: 10px;
+        padding: 0.25rem;
+        border: 1px solid var(--border);
+    }
+
+    .nav-link {
+        text-decoration: none;
+        color: var(--muted);
+        font-size: 0.85rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 7px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .nav-link:hover {
+        color: var(--text);
+        background: var(--input);
+    }
+
+    .nav-link.active {
+        background: var(--valeo-lime);
+        color: var(--background);
+        font-weight: 700;
+    }
+
+    .header-user {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        position: relative;
+    }
+
+    .header-user .user-email {
+        color: var(--muted);
+        font-size: 0.85rem;
+    }
+
+    .account-btn {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 1rem;
+    }
+
+    .account-btn:hover {
+        border-color: var(--valeo-lime);
+        color: var(--valeo-lime);
+        background: rgba(185,255,0,0.05);
+    }
+
+    .account-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.5rem;
+        min-width: 220px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        display: none;
+        z-index: 100;
+    }
+
+    .account-dropdown.visible {
+        display: block;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.6rem 0.75rem;
+        border-radius: 8px;
+        color: var(--text);
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: background 0.15s;
+        cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+        background: var(--input);
+    }
+
+    .dropdown-item i {
+        width: 18px;
+        color: var(--valeo-lime);
+        font-size: 0.9rem;
+    }
+
+    .dropdown-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 0.35rem 0;
+    }
+
+    .dropdown-userinfo {
+        padding: 0.6rem 0.75rem;
+    }
+
+    .dropdown-userinfo .name {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .dropdown-userinfo .role {
+        color: var(--muted);
+        font-size: 0.75rem;
+    }
+
+    .main-content {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        padding: 1.5rem 2rem;
+        max-width: 1700px;
+        margin: 0 auto;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+    }
+
+    .kpi-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.3s ease;
+    }
+
+    .kpi-card:hover {
+        border-color: rgba(185, 255, 0, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .kpi-card .kpi-label {
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.4rem;
+    }
+
+    .kpi-card .kpi-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1.1;
+    }
+
+    .kpi-card .kpi-value.lime {
+        color: var(--valeo-lime);
+    }
+
+    .kpi-card .kpi-desc {
+        font-size: 0.7rem;
+        color: var(--muted);
+        margin-top: 0.5rem;
+    }
+
+    .layout-columns {
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .panel-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .panel-title {
+        font-size: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text);
+    }
+
+    .panel-body {
+        padding: 1.25rem;
+        overflow-x: auto;
+    }
+
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        min-width: 600px;
+    }
+
+    th {
+        padding: 0.75rem 1rem;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        border-bottom: 2px solid var(--border);
+        font-weight: 600;
+        white-space: nowrap;
+        background: var(--background);
+        position: sticky;
+        top: 0;
+    }
+
+    td {
+        padding: 0.7rem 1rem;
+        font-size: 0.85rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        vertical-align: middle;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tr:hover td {
+        background: rgba(185, 255, 0, 0.03);
+    }
+
+    .tr-new {
+        animation: flashRow 1.5s ease-out;
+    }
+
+    @keyframes flashRow {
+        0% { background: rgba(185, 255, 0, 0.15); }
+        100% { background: transparent; }
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    .badge-lime {
+        background: rgba(185, 255, 0, 0.12);
+        color: var(--valeo-lime);
+        border: 1px solid rgba(185, 255, 0, 0.25);
+    }
+
+    .badge-green {
+        background: rgba(0, 204, 102, 0.12);
+        color: var(--accent-green);
+        border: 1px solid rgba(0, 204, 102, 0.25);
+    }
+
+    .badge-amber {
+        background: rgba(219, 185, 92, 0.12);
+        color: var(--accent-amber);
+        border: 1px solid rgba(219, 185, 92, 0.25);
+    }
+
+    .badge-red {
+        background: rgba(255, 68, 68, 0.12);
+        color: var(--accent-red);
+        border: 1px solid rgba(255, 68, 68, 0.25);
+    }
+
+    .trp-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, rgba(185, 255, 0, 0.12), rgba(31, 64, 78, 0.3));
+        color: var(--valeo-lime);
+        border: 1px solid rgba(185, 255, 0, 0.25);
+        font-family: monospace;
+        letter-spacing: 0.03em;
+    }
+
+    .progress-bar-container {
+        width: 80px;
+        height: 6px;
+        background: var(--input);
+        border-radius: 9999px;
+        overflow: hidden;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 0.4rem;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        border-radius: 9999px;
+        transition: width 0.4s ease;
+    }
+
+    .progress-bar-fill.green { background: var(--accent-green); }
+    .progress-bar-fill.amber { background: var(--accent-amber); }
+    .progress-bar-fill.lime { background: var(--valeo-lime); }
+
+    .camera-view {
+        position: relative;
+        background: #050607;
+        border-radius: 10px;
+        aspect-ratio: 16 / 9;
+        width: 100%;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .camera-grid {
+        position: absolute;
+        inset: 0;
+        background-size: 40px 40px;
+        background-image:
+            linear-gradient(to right, rgba(185, 255, 0, 0.03) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(185, 255, 0, 0.03) 1px, transparent 1px);
+    }
+
+    .camera-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+        z-index: 2;
+    }
+
+    .camera-crosshair {
+        width: 40px;
+        height: 40px;
+        position: relative;
+        opacity: 0.2;
+        z-index: 3;
+    }
+
+    .camera-crosshair::before,
+    .camera-crosshair::after {
+        content: '';
+        position: absolute;
+        background: var(--text);
+    }
+
+    .camera-crosshair::before {
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+    }
+
+    .camera-crosshair::after {
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+    }
+
+    .camera-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        z-index: 5;
+    }
+
+    .camera-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--accent-red);
+        font-family: monospace;
+        font-size: 0.68rem;
+        font-weight: bold;
+        text-shadow: 0 0 4px rgba(255, 68, 68, 0.5);
+    }
+
+    .camera-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .detection-boxes-container {
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+    }
+
+    .no-signal-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(5, 6, 7, 0.92);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        gap: 0.5rem;
+        backdrop-filter: blur(2px);
+    }
+
+    .detection-box {
+        position: absolute;
+        border: 1.5px solid var(--valeo-lime);
+        background: rgba(185, 255, 0, 0.08);
+        font-family: monospace;
+        font-size: 9px;
+        padding: 2px;
+        pointer-events: none;
+        box-shadow: 0 0 6px rgba(185, 255, 0, 0.3);
+        box-sizing: border-box;
+    }
+
+    .detection-box-label {
+        position: absolute;
+        top: -15px;
+        left: -1px;
+        background: var(--valeo-lime);
+        color: #101313;
+        padding: 0 4px;
+        font-size: 8px;
+        font-weight: 600;
+        white-space: nowrap;
+        border-radius: 2px;
+    }
+
+    .sim-info-panel {
+        background: rgba(8, 10, 11, 0.85);
+        backdrop-filter: blur(4px);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.875rem;
+        width: 100%;
+        margin-top: 0.875rem;
+    }
+
+    .sim-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.6rem;
+        font-size: 0.825rem;
+    }
+
+    .sim-info-label {
+        color: var(--muted);
+        align-self: center;
+    }
+
+    .sim-info-val {
+        font-weight: 600;
+        text-align: right;
+    }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .recency-graph {
+        min-height: 200px;
+        position: relative;
+    }
+
+    .sim-controls {
+        display: flex;
+        gap: 2.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .sim-control-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .ctrl-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.875rem;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .ctrl-btn-green {
+        background: rgba(0, 204, 102, 0.12);
+        color: var(--accent-green);
+        border-color: rgba(0, 204, 102, 0.25);
+    }
+
+    .ctrl-btn-red {
+        background: rgba(255, 68, 68, 0.1);
+        color: var(--accent-red);
+        border-color: rgba(255, 68, 68, 0.2);
+    }
+
+    .ctrl-btn-lime {
+        background: rgba(185, 255, 0, 0.1);
+        color: var(--valeo-lime);
+        border-color: rgba(185, 255, 0, 0.2);
+    }
+
+    .ctrl-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .ctrl-btn-lime:hover {
+        background: rgba(185, 255, 0, 0.2);
+    }
+
+    .ctrl-btn-red:hover {
+        background: rgba(255, 68, 68, 0.2);
+    }
+
+    .ctrl-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .app-footer {
+        position: relative;
+        z-index: 1;
+        background: var(--card);
+        border-top: 1px solid var(--border);
+        padding: 0.75rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.75rem;
+        color: var(--muted);
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: auto;
+    }
+
+    .app-footer a {
+        color: var(--valeo-lime);
+        text-decoration: none;
+    }
+
+    @media (max-width: 1200px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .layout-columns {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .kpi-grid {
+            grid-template-columns: 1fr;
+        }
+
+        header {
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: flex-start;
+            padding: 0.875rem 1rem;
+        }
+
+        .main-content {
+            padding: 1rem;
+        }
+
+        .header-nav {
+            width: 100%;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="background"></div>
+<div class="grid"></div>
+<div class="glow"></div>
+
+<header>
+    <div class="header-title">
+        <img src="images%20(1).png" alt="Valeo">
+        <h1>VALEO</h1>
+    </div>
+
+    <nav class="header-nav" id="mainNav">
+        <a href="dashboard.html" class="nav-link active">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </a>
+
+        <a href="historique.html" class="nav-link">
+            <i class="fa-solid fa-clock-rotate-left"></i> Historique
+        </a>
+
+        <a href="live.html" class="nav-link">
+            <i class="fa-solid fa-video"></i> Session Live
+        </a>
+
+        <a href="admin.html" class="nav-link" id="navAdmin" style="display:none;">
+            <i class="fa-solid fa-shield-halved"></i> Admin
+        </a>
+    </nav>
+
+    <div class="header-user">
+
+        <span style="color: var(--muted); font-size: 0.85rem; display:flex; align-items:center; gap:0.5rem;">
+            <i class="fa-regular fa-calendar"></i>
+            <span id="current-date">--</span>
+
+            <span style="opacity:0.3;">|</span>
+
+            <i class="fa-regular fa-clock"></i>
+            <span id="current-time">--:--:--</span>
+        </span>
+
+        <span class="user-email" id="userDisplay">Utilisateur</span>
+
+        <button class="account-btn" id="accountBtn" title="Mon compte">
+            <i class="fa-regular fa-circle-user"></i>
+        </button>
+
+        <div class="account-dropdown" id="accountDropdown">
+
+            <div class="dropdown-userinfo">
+                <div class="name" id="dropdownName">Utilisateur</div>
+                <div class="role" id="dropdownRole">Rôle</div>
+                <div class="role" id="dropdownEmail" style="color:var(--muted);font-size:0.7rem;margin-top:2px;">
+                    email
+                </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <a href="settings.html" class="dropdown-item">
+                <i class="fa-solid fa-gear"></i> Paramètres
+            </a>
+
+            <div class="dropdown-divider"></div>
+
+            <div class="dropdown-item"
+                 onclick="logout()"
+                 style="color:var(--accent-red, #ff4444);">
+
+                <i class="fa-solid fa-arrow-right-from-bracket"
+                   style="color:var(--accent-red, #ff4444);"></i>
+
+                Déconnexion
+            </div>
+
+        </div>
+    </div>
+</header>
+
+
+<div class="main-content">
+
+    <!-- KPI -->
+    <div class="kpi-grid">
+
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pièces Comptées</div>
+                <div class="kpi-value lime" id="val-total-parts">0</div>
+            </div>
+
+            <div class="kpi-desc">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+                Total cumulé de la session
+            </div>
+        </div>
+
+
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Produit Actuel</div>
+                <div class="kpi-value"
+                     id="val-active-product"
+                     style="font-size:1.2rem;">
+                    -
+                </div>
+            </div>
+
+            <div class="kpi-desc">
+                <i class="fa-solid fa-tag"></i>
+                Dernière classe détectée
+            </div>
+        </div>
+
+
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">TRP Moyen Global</div>
+                <div class="kpi-value lime" id="val-avg-fill">
+                    0%
+                </div>
+            </div>
+
+            <div class="kpi-desc">
+                <i class="fa-solid fa-chart-pie"></i>
+                Taux de remplissage moyen
+            </div>
+        </div>
+
+
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">TRP Produit Actuel</div>
+                <div class="kpi-value lime" id="val-trp-product">
+                    0%
+                </div>
+            </div>
+
+            <div class="kpi-desc">
+                <i class="fa-solid fa-bullseye"></i>
+                Moyenne TRP par produit
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- MAIN COLUMNS -->
+    <div class="layout-columns">
+
+        <!-- HISTORY -->
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <div class="panel-title">
+                    <i class="fa-solid fa-list-check"></i>
+                    Historique des Mesures (50 dernières)
+                </div>
+
+            </div>
+
+            <div class="panel-body" style="padding: 0;">
+
+                <div class="table-container">
+
+                    <table id="readings-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>ID</th>
+                                <th>Date &amp; Heure</th>
+                                <th>Produit</th>
+                                <th>Quantité</th>
+                                <th>Confiance moy.</th>
+                                <th>TRP</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="readings-table-body"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CAMERA -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div class="panel-title">
+                        <i class="fa-solid fa-camera"></i>
+                        Flux Détection
+                    </div>
+
+                    <span id="cam-simulation-badge"
+                          class="badge badge-amber">
+                        Caméra inactive
+                    </span>
+
+                </div>
+
+
+                <div class="panel-body">
+
+                    <div class="camera-view" id="camera-view-box">
+
+                        <video id="camera-video"
+                               class="camera-video"
+                               autoplay
+                               muted
+                               playsinline>
+                        </video>
+
+                        <div class="camera-grid"></div>
+
+                        <div class="camera-crosshair"></div>
+
+                        <div id="no-signal-overlay"
+                             class="no-signal-overlay">
+
+                            <i class="fa-solid fa-video-slash"
+                               style="font-size: 2.5rem; color: var(--muted); margin-bottom: 0.5rem;">
+                            </i>
+
+                            <span style="color: var(--muted); font-family: monospace; font-size: 0.875rem;">
+                                CAMÉRA INACTIVE
+                            </span>
+
+                        </div>
+
+                        <div class="detection-boxes-container"
+                             id="detection-overlay">
+                        </div>
+
+                        <div class="camera-overlay">
+
+                            <div class="camera-header">
+
+                                <span>
+                                    CAM-01 // VALEO_SYS
+                                </span>
+
+                                <span id="cam-rec-indicator">
+                                    <i class="fa-solid fa-circle"
+                                       style="color: var(--accent-red); font-size: 8px;">
+                                    </i>
+                                    LIVE
+                                </span>
+
+                            </div>
+
+                            <div class="camera-footer">
+
+                                <span id="cam-stats-overlay"
+                                      style="color: var(--text);
+                                             font-family: monospace;
+                                             font-size: 10px;
+                                             background: rgba(0,0,0,0.6);
+                                             padding: 4px 8px;
+                                             border-radius: 4px;">
+                                    NO SIGNAL
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DETAILS -->
+                    <div class="sim-info-panel">
+
+                        <div class="sim-info-grid">
+
+                            <span class="sim-info-label">
+                                Dernier Scan ID:
+                            </span>
+
+                            <span class="sim-info-val"
+                                  id="info-scan-id">
+                                -
+                            </span>
+
+
+                            <span class="sim-info-label">
+                                Quantité Instantanée:
+                            </span>
+
+                            <span class="sim-info-val"
+                                  id="info-qty">
+                                -
+                            </span>
+
+
+                            <span class="sim-info-label">
+                                Taux de Remplissage:
+                            </span>
+
+                            <span class="sim-info-val"
+                                  id="info-rate">
+                                -
+                            </span>
+
+
+                            <span class="sim-info-label">
+                                TRP Produit:
+                            </span>
+
+                            <span class="sim-info-val"
+                                  id="info-trp">
+                                -
+                            </span>
+
+
+                            <span class="sim-info-label">
+                                Statut Chargement:
+                            </span>
+
+                            <span class="sim-info-val"
+                                  id="info-status">
+                                -
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CHART -->
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div class="panel-title">
+                        <i class="fa-solid fa-chart-line"></i>
+                        Performance &amp; Volume
+                    </div>
+
+                </div>
+
+                <div class="panel-body">
+
+                    <div class="charts-grid">
+
+                        <div class="recency-graph">
+
+                            <canvas id="volumeChart"></canvas>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DETECTION CONTROLS -->
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <div class="panel-title">
+                <i class="fa-solid fa-sliders"></i>
+                Contrôles de Détection
+            </div>
+
+            <span class="badge badge-lime">
+                IA Roboflow · seuil 85%
+            </span>
+
+        </div>
+
+
+        <div class="panel-body">
+
+            <div class="sim-controls">
+
+                <!-- SENSOR -->
+                <div class="sim-control-group">
+
+                    <span class="sim-info-label">
+                        Capteur :
+                    </span>
+
+                    <button id="sensor-trigger-btn"
+                            class="ctrl-btn ctrl-btn-lime"
+                            onclick="triggerSensor()">
+
+                        <i class="fa-solid fa-radar"></i>
+                        Déclencher la détection
+
+                    </button>
+
+                </div>
+
+
+                <!-- CAMERA -->
+                <div class="sim-control-group">
+
+                    <span class="sim-info-label">
+                        Caméra :
+                    </span>
+
+                    <select id="camera-device-select"
+                            class="ctrl-btn"
+                            onchange="changeCameraDevice()"
+                            aria-label="Choisir la caméra">
+                        <option value="">Caméra par défaut</option>
+                    </select>
+
+                    <button class="ctrl-btn ctrl-btn-lime"
+                            onclick="toggleCamera(true)">
+
+                        <i class="fa-solid fa-camera"></i>
+                        Activer
+
+                    </button>
+
+                    <button class="ctrl-btn ctrl-btn-red"
+                            onclick="toggleCamera(false)">
+
+                        <i class="fa-solid fa-camera-slash"></i>
+                        Désactiver
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<footer class="app-footer">
+
+    <span>
+        &copy; 2025 Valeo — Tous droits réservés
+    </span>
+
+    <span>
+        Version 1.0.0 |
+        <a href="#">Support</a>
+    </span>
+
+</footer>
+
+
+<script>
+
+    // ============================================================
+    // VARIABLES
+    // ============================================================
+
+    let readings = [];
+    let chartInstance = null;
+    let trpMap = {};
+
+    let cameraActive = false;
+    let detectionInProgress = false;
+
+    let mediaStream = null;
+    let selectedCameraId = '';
+
+    let lastFrameSize = {
+        width: 0,
+        height: 0
+    };
+
+    let scanCounter = 0;
+
+    window.productTotals = {};
+
+
+    // ============================================================
+    // CLOCK
+    // ============================================================
+
+    function updateClock() {
+
+        const now = new Date();
+
+        document.getElementById('current-date').textContent =
+            now.toLocaleDateString('fr-FR');
+
+        document.getElementById('current-time').textContent =
+            now.toLocaleTimeString('fr-FR');
+
+    }
+
+    setInterval(updateClock, 1000);
+
+    updateClock();
+
+
+    // ============================================================
+    // USER INFO
+    // ============================================================
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // The dashboard is available only after a successful login.
+        if (!sessionStorage.getItem('valeo_userId')) {
+            window.location.replace('login.html');
+            return;
+        }
+
+        const userName =
+            sessionStorage.getItem('valeo_userName') ||
+            'Utilisateur';
+
+        const userCode =
+            sessionStorage.getItem('valeo_userCode') ||
+            '';
+
+        const userEmail =
+            sessionStorage.getItem('valeo_userEmail') ||
+            '';
+
+        const userRole =
+            sessionStorage.getItem('valeo_userRole') ||
+            '';
+
+
+        document.getElementById('userDisplay').textContent =
+            userCode || userName;
+
+
+        document.getElementById('dropdownName').textContent =
+            userName;
+
+        document.getElementById('dropdownRole').textContent =
+            userRole || '—';
+
+        document.getElementById('dropdownEmail').textContent =
+            userEmail || '—';
+
+
+        const isAdmin =
+            sessionStorage.getItem('valeo_isAdmin') === 'true';
+
+        const navAdmin =
+            document.getElementById('navAdmin');
+
+        if (navAdmin && isAdmin) {
+            navAdmin.style.display = 'inline-flex';
+        }
+
+
+        // Account dropdown
+
+        const accountBtn =
+            document.getElementById('accountBtn');
+
+        const dropdown =
+            document.getElementById('accountDropdown');
+
+
+        if (accountBtn) {
+
+            accountBtn.addEventListener('click', function(e) {
+
+                e.stopPropagation();
+
+                dropdown.classList.toggle('visible');
+
+            });
+
+
+            document.addEventListener('click', function() {
+
+                dropdown.classList.remove('visible');
+
+            });
+
+
+            dropdown.addEventListener('click', function(e) {
+
+                e.stopPropagation();
+
+            });
+
+        }
+
+
+        initChart();
+
+        updateCameraStatus(false);
+        refreshCameraDevices();
+
+    });
+
+
+    // ============================================================
+    // LOGOUT
+    // ============================================================
+
+    function logout() {
+
+        sessionStorage.removeItem('valeo_userName');
+        sessionStorage.removeItem('valeo_userEmail');
+        sessionStorage.removeItem('valeo_userRole');
+        sessionStorage.removeItem('valeo_userId');
+        sessionStorage.removeItem('valeo_userCode');
+        sessionStorage.removeItem('valeo_isAdmin');
+
+        window.location.href = 'login.html';
+
+    }
+
+
+    // ============================================================
+    // CAMERA STATUS
+    // ============================================================
+
+    function updateCameraStatus(active) {
+
+        cameraActive = active;
+
+        const noSignal =
+            document.getElementById('no-signal-overlay');
+
+        const badge =
+            document.getElementById('cam-simulation-badge');
+
+
+        if (active) {
+
+            noSignal.style.display = 'none';
+
+            badge.textContent = 'IA active';
+
+            badge.className = 'badge badge-green';
+
+        } else {
+
+            noSignal.style.display = 'flex';
+
+            badge.textContent = 'Caméra inactive';
+
+            badge.className = 'badge badge-amber';
+
+        }
+
+    }
+
+
+    // ============================================================
+    // CHART
+    // ============================================================
+
+    function initChart() {
+
+        const ctx =
+            document.getElementById('volumeChart').getContext('2d');
+
+
+        chartInstance = new Chart(ctx, {
+
+            type: 'line',
+
+            data: {
+
+                labels: [],
+
+                datasets: [{
+
+                    label: 'Pièces Détectées',
+
+                    data: [],
+
+                    borderColor: '#B9FF00',
+
+                    backgroundColor:
+                        'rgba(185, 255, 0, 0.08)',
+
+                    borderWidth: 2,
+
+                    fill: true,
+
+                    tension: 0.3
+
+                }]
+
+            },
+
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    }
+
+                },
+
+                scales: {
+
+                    x: {
+
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.04)'
+                        },
+
+                        ticks: {
+
+                            color: '#8C9498',
+
+                            font: {
+                                size: 10
+                            }
+
+                        }
+
+                    },
+
+
+                    y: {
+
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.04)'
+                        },
+
+                        ticks: {
+                            color: '#8C9498'
+                        },
+
+                        min: 0,
+
+                        max: 50
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+
+    // ============================================================
+    // STATS
+    // ============================================================
+
+    function calculateStats() {
+
+        if (readings.length === 0) {
+            return;
+        }
+
+
+        const productTotals = {};
+
+
+        readings.forEach(r => {
+
+            if (
+                !productTotals[r.produit] ||
+                productTotals[r.produit] < r.quantite_totale
+            ) {
+
+                productTotals[r.produit] =
+                    r.quantite_totale;
+
+            }
+
+        });
+
+
+        const totalParts =
+            Object.values(productTotals)
+                .reduce((sum, val) => sum + val, 0);
+
+
+        document.getElementById('val-total-parts').textContent =
+            totalParts || 0;
+
+
+        const latest = readings[0];
+
+
+        document.getElementById('val-active-product').textContent =
+            latest.produit;
+
+
+        const totalRate =
+            readings.reduce((sum, r) => {
+
+                const parsed =
+                    parseFloat(
+                        r.taux.replace('%', '')
+                    );
+
+                return sum +
+                    (isNaN(parsed) ? 0 : parsed);
+
+            }, 0);
+
+
+        const avgRate =
+            Math.round(
+                totalRate / readings.length
+            );
+
+
+        document.getElementById('val-avg-fill').textContent =
+            `${avgRate}%`;
+
+
+        const trpVal =
+            trpMap[latest.produit];
+
+
+        document.getElementById('val-trp-product').textContent =
+            trpVal !== undefined
+                ? `${trpVal}%`
+                : '-';
+
+    }
+
+
+    // ============================================================
+    // RENDER DETECTIONS
+    // ============================================================
+
+    function renderDetections(detections) {
+
+        const overlay =
+            document.getElementById('detection-overlay');
+
+
+        overlay.innerHTML = '';
+
+
+        const display =
+            overlay.getBoundingClientRect();
+
+
+        const scaleX =
+            lastFrameSize.width
+                ? display.width / lastFrameSize.width
+                : 1;
+
+
+        const scaleY =
+            lastFrameSize.height
+                ? display.height / lastFrameSize.height
+                : 1;
+
+
+        detections.forEach(detection => {
+
+            if (
+                ![
+                    detection.x,
+                    detection.y,
+                    detection.width,
+                    detection.height
+                ].every(Number.isFinite)
+            ) {
+                return;
+            }
+
+
+            const box =
+                document.createElement('div');
+
+
+            box.className =
+                'detection-box';
+
+
+            box.style.left =
+                `${(detection.x - detection.width / 2) * scaleX}px`;
+
+
+            box.style.top =
+                `${(detection.y - detection.height / 2) * scaleY}px`;
+
+
+            box.style.width =
+                `${detection.width * scaleX}px`;
+
+
+            box.style.height =
+                `${detection.height * scaleY}px`;
+
+
+            const label =
+                document.createElement('span');
+
+
+            label.className =
+                'detection-box-label';
+
+
+            label.textContent =
+                `${detection.product} ${(detection.confidence * 100).toFixed(1)}%`;
+
+
+            box.appendChild(label);
+
+            overlay.appendChild(box);
+
+        });
+
+    }
+
+
+    // ============================================================
+    // CAPTURE ONE FRAME
+    // ============================================================
+
+    function captureFrame() {
+
+        const video =
+            document.getElementById('camera-video');
+
+
+        if (
+            !video.videoWidth ||
+            !video.videoHeight
+        ) {
+            return null;
+        }
+
+
+        const canvas =
+            document.createElement('canvas');
+
+
+        canvas.width =
+            video.videoWidth;
+
+
+        canvas.height =
+            video.videoHeight;
+
+
+        lastFrameSize = {
+
+            width: canvas.width,
+
+            height: canvas.height
+
+        };
+
+
+        canvas
+            .getContext('2d')
+            .drawImage(
+                video,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+
+        return canvas.toDataURL(
+            'image/jpeg',
+            0.82
+        );
+
+    }
+
+    function freezeCapturedFrame() {
+
+        const video =
+            document.getElementById('camera-video');
+
+        video.pause();
+
+        document.getElementById('cam-rec-indicator').innerHTML =
+            '<i class="fa-solid fa-camera" style="color: var(--valeo-lime); font-size: 8px;"></i> CAPTURÉE';
+
+    }
+
+    // Leave the detection result visible briefly, then return to the live feed
+    // ready for the next manual capture.
+    async function resumeCameraPreview() {
+
+        if (!cameraActive || !mediaStream) {
+            return;
+        }
+
+        const video = document.getElementById('camera-video');
+
+        try {
+            await video.play();
+            document.getElementById('cam-rec-indicator').innerHTML =
+                '<i class="fa-solid fa-circle" style="color: var(--accent-red); font-size: 8px;"></i> LIVE';
+        } catch (error) {
+            console.error('Impossible de reprendre le flux cam\u00e9ra:', error);
+        }
+
+    }
+
+
+    // ============================================================
+    // RECORD DETECTIONS
+    // ============================================================
+
+    function recordDetections(counts, detections) {
+
+        const now = new Date();
+
+
+        Object.entries(counts).forEach(
+            ([product, quantity]) => {
+
+                window.productTotals[product] =
+                    (window.productTotals[product] || 0)
+                    + quantity;
+
+
+                const productDetections =
+                    detections.filter(
+                        d => d.product === product
+                    );
+
+
+                const confidence =
+                    Math.round(
+
+                        productDetections.reduce(
+                            (sum, d) =>
+                                sum + d.confidence,
+                            0
+                        )
+                        /
+                        productDetections.length
+                        *
+                        100
+
+                    );
+
+
+                scanCounter++;
+
+
+                const reading = {
+
+                    id:
+                        `VAL-${String(scanCounter).padStart(4, '0')}`,
+
+                    date:
+                        now.toLocaleDateString('fr-FR'),
+
+                    heure:
+                        now.toLocaleTimeString('fr-FR'),
+
+                    produit:
+                        product,
+
+                    quantite:
+                        quantity,
+
+                    quantite_totale:
+                        window.productTotals[product],
+
+                    taux:
+                        `${confidence}%`
+
+                };
+
+
+                readings.unshift(reading);
+
+
+                insertRow(
+                    reading,
+                    true
+                );
+
+            }
+        );
+
+
+        readings =
+            readings.slice(0, 50);
+
+
+        trpMap =
+            computeLocalTRP();
+
+
+        rebuildTableTRP();
+
+        calculateStats();
+
+        updateChart();
+
+    }
+
+
+    // ============================================================
+    // SENSOR TRIGGER
+    // ONE CLICK = ONE PHOTO
+    // ============================================================
+
+    async function triggerSensor() {
+
+        if (!cameraActive) {
+
+            alert(
+                'Veuillez d’abord activer la caméra.'
+            );
+
+            return;
+
+        }
+
+
+        if (detectionInProgress) {
+            return;
+        }
+
+
+        const frame =
+            captureFrame();
+
+
+        if (!frame) {
+
+            alert(
+                'Impossible de capturer l’image. La caméra n’est pas prête.'
+            );
+
+            return;
+
+        }
+
+        // Freeze the preview on the exact frame submitted to the AI.
+        freezeCapturedFrame();
+
+
+        const button =
+            document.getElementById(
+                'sensor-trigger-btn'
+            );
+
+
+        // Button loading state
+
+        button.disabled = true;
+
+        button.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Capture...';
+
+
+        try {
+
+            detectionInProgress = true;
+
+
+            // Send captured image to backend
+
+            const response =
+                await fetch(
+                    '/api/detect',
+                    {
+
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
+
+                        body: JSON.stringify({
+                            image: frame
+                        })
+
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!data.success) {
+
+                throw new Error(
+                    data.message ||
+                    'Détection indisponible'
+                );
+
+            }
+
+
+            const detections =
+                data.detections || [];
+            const jigDetections =
+                data.jig_detections || [];
+
+
+            // Display detection boxes
+
+            renderDetections(
+                [...detections, ...jigDetections]
+            );
+
+
+            // Display detected products
+
+            const countText =
+                Object.entries(
+                    data.counts || {}
+                )
+                .map(
+                    ([name, count]) =>
+                        `${name}: ${count}`
+                )
+                .join(' | ');
+            const jigText = detections.length
+                ? `Jigs: ${data.jig_count || 0}`
+                : '';
+
+
+            document.getElementById(
+                'cam-stats-overlay'
+            ).textContent =
+                [countText, jigText].filter(Boolean).join(' | ') ||
+                'Aucun produit >= 40%';
+
+
+            // Record results
+
+            if (detections.length) {
+
+                recordDetections(
+                    data.counts,
+                    detections
+                );
+
+            }
+
+
+            // Scan ID
+
+            document.getElementById(
+                'info-scan-id'
+            ).textContent =
+
+                detections.length
+                    ? `#VAL-${String(scanCounter).padStart(4, '0')}`
+                    : '-';
+
+
+            // Quantity
+
+            document.getElementById(
+                'info-qty'
+            ).textContent =
+                `${detections.length} produit(s)`;
+
+
+            // Confidence
+
+            document.getElementById(
+                'info-rate'
+            ).textContent =
+
+                detections.length
+
+                    ? `${Math.round(
+                        detections.reduce(
+                            (s, d) =>
+                                s + d.confidence,
+                            0
+                        )
+                        /
+                        detections.length
+                        *
+                        100
+                    )}%`
+
+                    : '-';
+
+
+            // Status
+
+            document.getElementById(
+                'info-status'
+            ).innerHTML =
+
+                detections.length
+
+                    ? '<span class="badge badge-green">DÉTECTÉ</span>'
+
+                    : '<span class="badge badge-amber">AUCUN PRODUIT</span>';
+
+
+        } catch (error) {
+
+            console.error(
+                'Erreur détection:',
+                error
+            );
+
+
+            document.getElementById(
+                'cam-stats-overlay'
+            ).textContent =
+                `ERREUR IA: ${error.message}`;
+
+
+            document.getElementById(
+                'info-status'
+            ).innerHTML =
+                '<span class="badge badge-red">ERREUR</span>';
+
+
+        } finally {
+
+            // Keep the captured image and analysis visible for a moment before
+            // automatically reactivating the camera for the next detection.
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            await resumeCameraPreview();
+
+            detectionInProgress = false;
+
+
+            // Restore button
+
+            button.disabled = false;
+
+            button.innerHTML =
+                '<i class="fa-solid fa-radar"></i> Déclencher la détection';
+
+        }
+
+    }
+
+
+    // ============================================================
+    // CHART UPDATE
+    // ============================================================
+
+    function updateChart() {
+
+        if (!chartInstance) {
+            return;
+        }
+
+
+        const recent =
+            [...readings]
+                .slice(0, 15)
+                .reverse();
+
+
+        chartInstance.data.labels =
+            recent.map(
+                r => r.heure
+            );
+
+
+        chartInstance.data.datasets[0].data =
+            recent.map(
+                r => r.quantite
+            );
+
+
+        chartInstance.update();
+
+    }
+
+
+    // ============================================================
+    // TRP
+    // ============================================================
+
+    function computeLocalTRP() {
+
+        const productRates = {};
+
+
+        readings.forEach(r => {
+
+            const rate =
+                parseFloat(
+                    r.taux.replace('%', '')
+                );
+
+
+            if (!productRates[r.produit]) {
+
+                productRates[r.produit] = [];
+
+            }
+
+
+            if (!isNaN(rate)) {
+
+                productRates[r.produit].push(
+                    rate
+                );
+
+            }
+
+        });
+
+
+        const result = {};
+
+
+        for (
+            const [prod, rates]
+            of Object.entries(productRates)
+        ) {
+
+            result[prod] =
+                rates.length
+
+                    ? parseFloat(
+                        (
+                            rates.reduce(
+                                (a, b) =>
+                                    a + b,
+                                0
+                            )
+                            /
+                            rates.length
+                        ).toFixed(1)
+                    )
+
+                    : 0;
+
+        }
+
+
+        return result;
+
+    }
+
+
+    // ============================================================
+    // TABLE
+    // ============================================================
+
+    function insertRow(
+        r,
+        isNew = false
+    ) {
+
+        const tbody =
+            document.getElementById(
+                'readings-table-body'
+            );
+
+
+        const tr =
+            document.createElement('tr');
+
+
+        if (isNew) {
+            tr.className = 'tr-new';
+        }
+
+
+        const rateVal =
+            parseFloat(
+                r.taux.replace('%', '')
+            );
+
+
+        let badgeClass =
+            'badge-lime';
+
+
+        if (rateVal >= 100) {
+
+            badgeClass =
+                'badge-green';
+
+        } else if (rateVal > 0) {
+
+            badgeClass =
+                'badge-amber';
+
+        }
+
+
+        const localTRP =
+            computeLocalTRP();
+
+
+        const trpVal =
+            r.trp ||
+
+            (
+                localTRP[r.produit] !== undefined
+                    ? `${localTRP[r.produit]}%`
+                    : '-'
+            );
+
+
+        const fillClass =
+            rateVal >= 100
+                ? 'green'
+                : rateVal > 50
+                    ? 'amber'
+                    : 'lime';
+
+
+        tr.innerHTML = `
+
+            <td>
+                <strong>#${r.id}</strong>
+            </td>
+
+            <td>
+                ${r.date} ${r.heure}
+            </td>
+
+            <td>
+
+                <span
+                    class="badge badge-lime"
+                    style="
+                        max-width:160px;
+                        white-space:nowrap;
+                        overflow:hidden;
+                        text-overflow:ellipsis;
+                    "
+                    title="${r.produit}"
+                >
+                    ${r.produit}
+                </span>
+
+            </td>
+
+            <td>
+
+                ${r.quantite}
+
+                <small style="color:var(--muted)">
+                    (Total: ${r.quantite_totale})
+                </small>
+
+            </td>
+
+            <td>
+
+                <div class="progress-bar-container">
+
+                    <div
+                        class="progress-bar-fill ${fillClass}"
+                        style="width:${Math.min(rateVal,100)}%"
+                    ></div>
+
+                </div>
+
+                <span class="badge ${badgeClass}">
+                    ${r.taux}
+                </span>
+
+            </td>
+
+            <td>
+
+                <span class="trp-badge">
+                    ${trpVal}
+                </span>
+
+            </td>
+
+        `;
+
+
+        if (tbody.children.length === 0) {
+
+            tbody.appendChild(tr);
+
+        } else {
+
+            tbody.insertBefore(
+                tr,
+                tbody.firstChild
+            );
+
+        }
+
+
+        if (tbody.children.length > 50) {
+
+            tbody.removeChild(
+                tbody.lastChild
+            );
+
+        }
+
+    }
+
+
+    function rebuildTableTRP() {
+
+        const localTRP =
+            computeLocalTRP();
+
+
+        const tbody =
+            document.getElementById(
+                'readings-table-body'
+            );
+
+
+        const rows =
+            tbody.querySelectorAll('tr');
+
+
+        rows.forEach(
+            (tr, idx) => {
+
+                const trpCell =
+                    tr.querySelector(
+                        '.trp-badge'
+                    );
+
+
+                if (
+                    trpCell &&
+                    readings[idx]
+                ) {
+
+                    const prod =
+                        readings[idx].produit;
+
+
+                    trpCell.textContent =
+                        localTRP[prod] !== undefined
+                            ? `${localTRP[prod]}%`
+                            : '-';
+
+                }
+
+            }
+        );
+
+
+        trpMap =
+            localTRP;
+
+    }
+
+
+    // ============================================================
+    // CAMERA
+    // ============================================================
+
+    async function refreshCameraDevices() {
+
+        const select = document.getElementById('camera-device-select');
+        if (!select || !navigator.mediaDevices?.enumerateDevices) return;
+
+        const currentValue = selectedCameraId || select.value;
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cameras = devices.filter(device => device.kind === 'videoinput');
+
+        select.innerHTML = '<option value="">Caméra par défaut</option>';
+        cameras.forEach((camera, index) => {
+            const option = document.createElement('option');
+            option.value = camera.deviceId;
+            option.textContent = camera.label || `Caméra ${index + 1}`;
+            select.appendChild(option);
+        });
+
+        if (currentValue && cameras.some(camera => camera.deviceId === currentValue)) {
+            select.value = currentValue;
+        }
+
+    }
+
+    async function changeCameraDevice() {
+
+        selectedCameraId = document.getElementById('camera-device-select').value;
+
+        if (cameraActive) {
+            await toggleCamera(false);
+            await toggleCamera(true);
+        }
+
+    }
+
+    async function toggleCamera(state) {
+
+        const video =
+            document.getElementById(
+                'camera-video'
+            );
+
+
+        if (
+            state &&
+            !mediaStream
+        ) {
+
+            try {
+
+                const selectedDeviceId = document.getElementById('camera-device-select').value;
+                selectedCameraId = selectedDeviceId;
+
+                mediaStream =
+                    await navigator.mediaDevices.getUserMedia({
+
+                        video: {
+                            ...(selectedDeviceId ? {
+                                deviceId: { exact: selectedDeviceId }
+                            } : {}),
+                            width: {
+                                ideal: 1280
+                            },
+
+                            height: {
+                                ideal: 720
+                            }
+
+                        },
+
+                        audio: false
+
+                    });
+
+
+                video.srcObject =
+                    mediaStream;
+
+
+                video.style.display =
+                    'block';
+
+                // Device names are available after the browser has camera permission.
+                await refreshCameraDevices();
+
+
+            } catch (error) {
+
+                alert(
+                    'Impossible d’accéder à la caméra. Autorisez son utilisation puis réessayez.'
+                );
+
+                console.error(error);
+
+                return;
+
+            }
+
+        }
+
+
+        if (
+            !state &&
+            mediaStream
+        ) {
+
+            mediaStream
+                .getTracks()
+                .forEach(
+                    track => track.stop()
+                );
+
+
+            mediaStream = null;
+
+            video.srcObject = null;
+
+            video.style.display =
+                'none';
+
+        }
+
+        if (
+            state &&
+            mediaStream
+        ) {
+
+            await video.play();
+
+            document.getElementById('cam-rec-indicator').innerHTML =
+                '<i class="fa-solid fa-circle" style="color: var(--accent-red); font-size: 8px;"></i> LIVE';
+
+        }
+
+
+        updateCameraStatus(
+            state
+        );
+
+
+        if (!state) {
+
+            document.getElementById(
+                'detection-overlay'
+            ).innerHTML = '';
+
+
+            document.getElementById(
+                'cam-stats-overlay'
+            ).textContent =
+                'NO SIGNAL';
+
+
+            document.getElementById(
+                'info-scan-id'
+            ).textContent =
+                '-';
+
+
+            document.getElementById(
+                'info-qty'
+            ).textContent =
+                '-';
+
+
+            document.getElementById(
+                'info-rate'
+            ).textContent =
+                '-';
+
+
+            document.getElementById(
+                'info-trp'
+            ).textContent =
+                '-';
+
+
+            document.getElementById(
+                'info-status'
+            ).textContent =
+                '-';
+
+        }
+
+    }
+
+</script>
+
+</body>
+</html>
+```

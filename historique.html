@@ -1,0 +1,760 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique - Valeo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --valeo-lime: #B9FF00;
+            --valeo-blue: #1F404E;
+            --background: #080A0B;
+            --card: #101314;
+            --input: #181C1E;
+            --text: #FFFFFF;
+            --muted: #8C9498;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent-green: #00cc66;
+            --accent-amber: #dbb95c;
+            --accent-red: #ff4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .background {
+            position: fixed; inset: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(185, 255, 0, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(31, 64, 78, 0.06) 0%, transparent 50%);
+        }
+
+        .grid {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background-image:
+                linear-gradient(rgba(185, 255, 0, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(185, 255, 0, 0.025) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(ellipse at center, black, transparent 80%);
+        }
+
+        .glow {
+            position: fixed; width: 450px; height: 450px;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--valeo-lime); opacity: 0.025;
+            filter: blur(150px); border-radius: 50%; pointer-events: none; z-index: 0;
+        }
+
+        header {
+            position: relative; z-index: 100;
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0.875rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 1rem; flex-wrap: wrap; position: sticky; top: 0;
+        }
+
+        .header-title { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+        .header-title img { width: 40px; height: auto; }
+        .header-title h1 { font-size: 1.25rem; font-weight: 800; color: var(--valeo-lime); letter-spacing: 3px; }
+
+        .header-nav {
+            display: flex; gap: 0.25rem; align-items: center;
+            background: var(--background); border-radius: 10px;
+            padding: 0.25rem; border: 1px solid var(--border);
+        }
+
+        .nav-link {
+            text-decoration: none; color: var(--muted); font-size: 0.85rem;
+            font-weight: 500; padding: 0.5rem 1rem; border-radius: 7px;
+            transition: all 0.2s ease; display: flex; align-items: center; gap: 0.4rem;
+            white-space: nowrap; cursor: pointer;
+        }
+        .nav-link:hover { color: var(--text); background: var(--input); }
+        .nav-link.active { background: var(--valeo-lime); color: var(--background); font-weight: 700; }
+
+        .account-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 1rem; flex-shrink:0; }
+        .account-btn:hover { border-color: var(--valeo-lime); color: var(--valeo-lime); background: rgba(185,255,0,0.05); }
+        .account-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.5rem; min-width: 220px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); display: none; z-index: 100; }
+        .account-dropdown.visible { display: block; }
+        .dropdown-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 0.85rem; transition: background 0.15s; cursor: pointer; }
+        .dropdown-item:hover { background: var(--input); }
+        .dropdown-item i { width: 18px; color: var(--valeo-lime); font-size: 0.9rem; }
+        .dropdown-divider { height: 1px; background: var(--border); margin: 0.35rem 0; }
+        .dropdown-userinfo { padding: 0.6rem 0.75rem; }
+        .dropdown-userinfo .name { font-weight: 600; font-size: 0.9rem; }
+        .dropdown-userinfo .role { color: var(--muted); font-size: 0.75rem; }
+        .header-user { position: relative; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+
+        .main-content {
+            position: relative; z-index: 1;
+            flex: 1; padding: 1.5rem 2rem;
+            max-width: 1700px; margin: 0 auto; width: 100%;
+            display: flex; flex-direction: column; gap: 1.5rem;
+        }
+
+        .page-header {
+            display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;
+        }
+        .page-header h2 { font-size: 1.5rem; font-weight: 700; }
+        .page-header h2 i { color: var(--valeo-lime); }
+        .page-header p { color: var(--muted); font-size: 0.875rem; margin-top: 0.25rem; }
+        .page-header .header-actions { margin-left: auto; display: flex; gap: 0.75rem; align-items: center; }
+
+        .panel {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .panel-header {
+            padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+        }
+        .panel-title { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .panel-body { padding: 1.25rem; overflow-x: auto; }
+
+        .badge {
+            display: inline-flex; align-items: center; padding: 0.2rem 0.5rem;
+            border-radius: 6px; font-size: 0.7rem; font-weight: 600; line-height: 1.4;
+        }
+        .badge-lime { background: rgba(185, 255, 0, 0.12); color: var(--valeo-lime); border: 1px solid rgba(185, 255, 0, 0.25); }
+        .badge-green { background: rgba(0, 204, 102, 0.12); color: var(--accent-green); border: 1px solid rgba(0, 204, 102, 0.25); }
+        .badge-amber { background: rgba(219, 185, 92, 0.12); color: var(--accent-amber); border: 1px solid rgba(219, 185, 92, 0.25); }
+
+        .kpi-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem;
+        }
+
+        .kpi-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 1.25rem 1.5rem;
+            display: flex; flex-direction: column; justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        .kpi-card:hover { border-color: rgba(185, 255, 0, 0.15); transform: translateY(-2px); }
+        .kpi-card .kpi-label { color: var(--muted); font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+        .kpi-card .kpi-value { font-size: 1.8rem; font-weight: 700; color: var(--valeo-lime); line-height: 1.1; }
+        .kpi-card .kpi-desc { font-size: 0.7rem; color: var(--muted); margin-top: 0.5rem; }
+
+        /* Filters */
+        .filters-grid {
+            display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1.5fr;
+            gap: 1.25rem; align-items: end;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 0.4rem; }
+        .filter-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; display: flex; align-items: center; gap: 0.3rem; }
+        .filter-select, .filter-input {
+            background: var(--input); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-family: 'Inter', sans-serif;
+            font-size: 0.85rem; padding: 0.5rem 0.75rem; outline: none;
+            transition: border 0.2s; width: 100%;
+        }
+        .filter-select:focus, .filter-input:focus { border-color: var(--valeo-lime); }
+
+        .period-btns { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+        .period-btn {
+            padding: 0.35rem 0.7rem; border-radius: 6px;
+            border: 1px solid var(--border); background: var(--input);
+            color: var(--muted); font-size: 0.75rem; font-family: 'Inter', sans-serif;
+            font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .period-btn:hover { border-color: var(--valeo-lime); color: var(--valeo-lime); }
+        .period-btn.active { background: var(--valeo-lime); border-color: var(--valeo-lime); color: var(--background); }
+
+        .ctrl-btn {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.4rem 0.875rem; border-radius: 7px;
+            border: 1px solid transparent; cursor: pointer;
+            font-size: 0.8rem; font-family: 'Inter', sans-serif;
+            font-weight: 600; transition: all 0.2s;
+        }
+        .ctrl-btn-green { background: rgba(0, 204, 102, 0.12); color: var(--accent-green); border-color: rgba(0, 204, 102, 0.25); }
+        .ctrl-btn-green:hover { background: rgba(0, 204, 102, 0.22); }
+        .ctrl-btn-red { background: rgba(255, 68, 68, 0.1); color: var(--accent-red); border-color: rgba(255, 68, 68, 0.2); }
+        .ctrl-btn-red:hover { background: rgba(255, 68, 68, 0.2); }
+        .ctrl-btn-lime { background: rgba(185, 255, 0, 0.1); color: var(--valeo-lime); border-color: rgba(185, 255, 0, 0.2); }
+        .ctrl-btn-lime:hover { background: rgba(185, 255, 0, 0.2); }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 700px; }
+        th { padding: 0.75rem 1rem; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); border-bottom: 2px solid var(--border); font-weight: 600; white-space: nowrap; background: var(--background); position: sticky; top: 0; }
+        td { padding: 0.7rem 1rem; font-size: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.04); color: var(--text); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(185, 255, 0, 0.03); }
+
+        .progress-bar-container {
+            width: 80px; height: 6px; background: var(--input);
+            border-radius: 9999px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 0.4rem;
+        }
+        .progress-bar-fill { height: 100%; border-radius: 9999px; transition: width 0.4s; }
+        .progress-bar-fill.green { background: var(--accent-green); }
+        .progress-bar-fill.amber { background: var(--accent-amber); }
+        .progress-bar-fill.lime { background: var(--valeo-lime); }
+
+        .trp-badge {
+            display: inline-flex; align-items: center; padding: 0.2rem 0.6rem;
+            border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+            background: linear-gradient(135deg, rgba(185, 255, 0, 0.12), rgba(31, 64, 78, 0.3));
+            color: var(--valeo-lime); border: 1px solid rgba(185, 255, 0, 0.25);
+            font-family: monospace; letter-spacing: 0.03em;
+        }
+
+        .pagination-bar {
+            display: flex; align-items: center; justify-content: center;
+            gap: 1rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+        }
+        .page-btn {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.4rem 0.875rem; background: var(--input);
+            border: 1px solid var(--border); border-radius: 7px;
+            color: var(--text); font-size: 0.825rem; font-family: 'Inter', sans-serif;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .page-btn:hover:not(:disabled) { background: var(--valeo-lime); color: var(--background); border-color: var(--valeo-lime); }
+        .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        #histChart { min-height: 240px; }
+
+        .app-footer {
+            position: relative;
+            z-index: 1;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--muted);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .app-footer a {
+            color: var(--valeo-lime);
+            text-decoration: none;
+        }
+        .app-footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1200px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .filters-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .filters-grid { grid-template-columns: 1fr; }
+            header { flex-direction: column; padding: 0.875rem 1rem; }
+            .main-content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="grid"></div>
+    <div class="glow"></div>
+
+    <header>
+        <div class="header-title">
+            <img src="images%20(1).png" alt="Valeo">
+            <h1>VALEO</h1>
+        </div>
+        <nav class="header-nav" id="mainNav">
+            <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="historique.html" class="nav-link active"><i class="fa-solid fa-clock-rotate-left"></i> Historique</a>
+            <a href="live.html" class="nav-link"><i class="fa-solid fa-video"></i> Session Live</a>
+            <a href="admin.html" class="nav-link" id="navAdmin" style="display:none;"><i class="fa-solid fa-shield-halved"></i> Admin</a>
+        </nav>
+        <div class="header-user">
+            <span style="color: var(--muted); font-size: 0.85rem; display:flex; align-items:center; gap:0.5rem; flex-shrink:0;">
+                <i class="fa-regular fa-calendar"></i> <span id="current-date">--</span>
+                <span style="opacity:0.3;">|</span>
+                <i class="fa-regular fa-clock"></i> <span id="current-time">--:--:--</span>
+            </span>
+            <span class="user-email" id="userDisplay" style="font-size:0.85rem;"></span>
+            <button class="account-btn" id="accountBtn" title="Mon compte"><i class="fa-regular fa-circle-user"></i></button>
+            <div class="account-dropdown" id="accountDropdown">
+                <div class="dropdown-userinfo">
+                    <div class="name" id="dropdownName">Utilisateur</div>
+                    <div class="role" id="dropdownRole">Rôle</div>
+                    <div class="role" id="dropdownEmail" style="color:var(--muted);font-size:0.7rem;margin-top:2px;">email</div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a href="settings.html" class="dropdown-item"><i class="fa-solid fa-gear"></i> Paramètres</a>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item" onclick="logout()" style="color:var(--accent-red, #ff4444);"><i class="fa-solid fa-arrow-right-from-bracket" style="color:var(--accent-red, #ff4444);"></i> Déconnexion</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="page-header">
+            <div>
+                <h2><i class="fa-solid fa-clock-rotate-left"></i> Historique Total des Mesures</h2>
+                <p>Toutes les lectures enregistrées avec filtres avancés</p>
+            </div>
+            <div class="header-actions">
+                <span class="badge badge-lime" id="total-count-badge">0 enregistrements</span>
+                <button class="ctrl-btn ctrl-btn-green" onclick="exportCSV()" id="btn-export">
+                    <i class="fa-solid fa-file-csv"></i> Exporter CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fa-solid fa-filter"></i> Filtres</div>
+                <button class="ctrl-btn ctrl-btn-red" onclick="resetFilters()">
+                    <i class="fa-solid fa-rotate-left"></i> Réinitialiser
+                </button>
+            </div>
+            <div class="panel-body">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label"><i class="fa-solid fa-calendar-days"></i> Période</label>
+                        <div class="period-btns">
+                            <button class="period-btn" id="period-today" onclick="setPeriod('today')">Aujourd'hui</button>
+                            <button class="period-btn" id="period-week" onclick="setPeriod('week')">7 jours</button>
+                            <button class="period-btn" id="period-month" onclick="setPeriod('month')">Ce mois</button>
+                            <button class="period-btn" id="period-all" onclick="setPeriod('all')">Tout</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label" for="filter-product"><i class="fa-solid fa-tag"></i> Produit</label>
+                        <select class="filter-select" id="filter-product" onchange="applyFilters()">
+                            <option value="">Tous les produits</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label" for="filter-date-from"><i class="fa-solid fa-calendar-plus"></i> Date début</label>
+                        <input type="date" class="filter-input" id="filter-date-from" onchange="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label" for="filter-date-to"><i class="fa-solid fa-calendar-minus"></i> Date fin</label>
+                        <input type="date" class="filter-input" id="filter-date-to" onchange="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label" for="filter-search"><i class="fa-solid fa-magnifying-glass"></i> Recherche</label>
+                        <input type="text" class="filter-input" id="filter-search" placeholder="ID, produit, date..." oninput="applyClientFilters()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY -->
+        <div class="kpi-grid" id="summary-grid">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Total Enregistrements</div>
+                    <div class="kpi-value" id="hist-total-records">0</div>
+                </div>
+                <div class="kpi-desc"><i class="fa-solid fa-database"></i> Lignes filtrées</div>
+            </div>
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Total Pièces</div>
+                    <div class="kpi-value" id="hist-total-parts">0</div>
+                </div>
+                <div class="kpi-desc"><i class="fa-solid fa-cubes"></i> Somme quantités</div>
+            </div>
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">TRP Moyen</div>
+                    <div class="kpi-value" id="hist-avg-trp">0%</div>
+                </div>
+                <div class="kpi-desc"><i class="fa-solid fa-chart-pie"></i> Taux moyen global</div>
+            </div>
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Produits Distincts</div>
+                    <div class="kpi-value" id="hist-distinct-products">0</div>
+                </div>
+                <div class="kpi-desc"><i class="fa-solid fa-tags"></i> Types différents</div>
+            </div>
+        </div>
+
+        <!-- CHART -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fa-solid fa-chart-bar"></i> Volume par Produit</div>
+            </div>
+            <div class="panel-body">
+                <canvas id="histChart"></canvas>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fa-solid fa-table"></i> Toutes les Mesures</div>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <span style="color:var(--muted); font-size:0.8rem;">Trier :</span>
+                    <select class="filter-select" id="sort-by" onchange="applyClientFilters()" style="padding:0.25rem 0.5rem; font-size:0.8rem; width:auto;">
+                        <option value="date-desc">Date ↓</option>
+                        <option value="date-asc">Date ↑</option>
+                        <option value="qty-desc">Quantité ↓</option>
+                        <option value="qty-asc">Quantité ↑</option>
+                        <option value="rate-desc">TRP ↓</option>
+                        <option value="rate-asc">TRP ↑</option>
+                        <option value="product-asc">Produit A-Z</option>
+                    </select>
+                </div>
+            </div>
+            <div class="panel-body" style="padding:0; overflow-x:auto;">
+                <table id="hist-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>ID</th>
+                            <th>Date &amp; Heure</th>
+                            <th>Produit</th>
+                            <th>Quantité</th>
+                            <th>Total</th>
+                            <th>Remplissage</th>
+                            <th>TRP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hist-table-body">
+                        <tr><td colspan="8" style="text-align:center; padding:3rem; color:var(--muted);"><i class="fa-solid fa-spinner fa-spin"></i> Chargement...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination-bar">
+                <button class="page-btn" id="btn-prev" onclick="changePage(-1)"><i class="fa-solid fa-chevron-left"></i> Préc.</button>
+                <span id="page-info" style="color:var(--muted); font-size:0.875rem;">Page 1</span>
+                <button class="page-btn" id="btn-next" onclick="changePage(1)">Suiv. <i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <span>&copy; 2025 Valeo — Tous droits réservés</span>
+        <span>Version 1.0.0 | <a href="#">Support</a></span>
+    </footer>
+
+    <script>
+        const PRODUCTS = ['SWS', 'LJC', 'SWEET 400', '7B/9B/XDD', '8B', 'HAZARD', 'Cap capacitive', 'E-Toggle', 'TCP', 'FRAME', 'MATE', 'HMI', 'ADAS', 'Toggle', 'SWITCH', 'HORN', 'SENSOR'];
+        const PAGE_SIZE = 25;
+        let allData = [];
+        let displayData = [];
+        let currentPage = 1;
+        let histChart = null;
+        let trpByProduct = {};
+        let scanCounter = 0;
+
+function updateClock() {
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleDateString('fr-FR');
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('fr-FR');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Afficher le lien Admin si l'utilisateur est admin
+            const isAdmin = sessionStorage.getItem('valeo_isAdmin') === 'true';
+            const navAdmin = document.getElementById('navAdmin');
+            if (navAdmin && isAdmin) {
+                navAdmin.style.display = 'inline-flex';
+            }
+
+            // User info display
+            const userName = sessionStorage.getItem('valeo_userName') || 'Utilisateur';
+            const userCode = sessionStorage.getItem('valeo_userCode') || '';
+            const userEmail = sessionStorage.getItem('valeo_userEmail') || '';
+            const userRole = sessionStorage.getItem('valeo_userRole') || '';
+            document.getElementById('userDisplay').textContent = userCode || userName;
+            document.getElementById('dropdownName').textContent = userName;
+            document.getElementById('dropdownRole').textContent = userRole || '—';
+            document.getElementById('dropdownEmail').textContent = userEmail || '—';
+
+            // Account dropdown toggle
+            const accountBtn = document.getElementById('accountBtn');
+            const dropdown = document.getElementById('accountDropdown');
+            if (accountBtn) {
+                accountBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('visible');
+                });
+                document.addEventListener('click', function() {
+                    dropdown.classList.remove('visible');
+                });
+                dropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+
+            populateProductDropdown();
+            generateInitialData();
+        });
+
+        function logout() {
+            sessionStorage.removeItem('valeo_userName');
+            sessionStorage.removeItem('valeo_userEmail');
+            sessionStorage.removeItem('valeo_userRole');
+            sessionStorage.removeItem('valeo_userId');
+            sessionStorage.removeItem('valeo_isAdmin');
+            window.location.href = 'loading.html';
+        }
+
+        function populateProductDropdown() {
+            const sel = document.getElementById('filter-product');
+            PRODUCTS.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p; opt.textContent = p; sel.appendChild(opt);
+            });
+        }
+
+        function generateReading() {
+            const now = new Date();
+            const prod = PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)];
+            const qty = Math.floor(Math.random() * 25) + 5;
+            scanCounter++;
+            const rate = Math.round((qty / 45) * 100);
+            return {
+                id: `VAL-${String(scanCounter).padStart(4, '0')}`,
+                date: now.toLocaleDateString('fr-FR'),
+                heure: now.toLocaleTimeString('fr-FR'),
+                produit: prod,
+                quantite: qty,
+                quantite_totale: Math.floor(Math.random() * 200) + qty,
+                taux: `${rate}%`
+            };
+        }
+
+        function generateInitialData() {
+            const count = 30 + Math.floor(Math.random() * 20);
+            for (let i = 0; i < count; i++) {
+                allData.push(generateReading());
+            }
+            applyClientFilters();
+        }
+
+        function computeTRP(data) {
+            const rates = {};
+            data.forEach(r => {
+                const rate = parseFloat(r.taux.replace('%', ''));
+                if (!rates[r.produit]) rates[r.produit] = [];
+                if (!isNaN(rate)) rates[r.produit].push(rate);
+            });
+            const result = {};
+            for (const [prod, vals] of Object.entries(rates)) {
+                result[prod] = vals.length ? parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1)) : 0;
+            }
+            return result;
+        }
+
+        function parseDMY(dateStr) {
+            if (!dateStr) return null;
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return null;
+            return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        }
+
+        function setPeriod(period) {
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`period-${period}`).classList.add('active');
+            const today = new Date();
+            const fmt = d => d.toISOString().split('T')[0];
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            if (period === 'today') {
+                document.getElementById('filter-date-from').value = fmt(today);
+                document.getElementById('filter-date-to').value = fmt(today);
+            } else if (period === 'week') {
+                const from = new Date(today); from.setDate(today.getDate() - 7);
+                document.getElementById('filter-date-from').value = fmt(from);
+                document.getElementById('filter-date-to').value = fmt(today);
+            } else if (period === 'month') {
+                const from = new Date(today.getFullYear(), today.getMonth(), 1);
+                document.getElementById('filter-date-from').value = fmt(from);
+                document.getElementById('filter-date-to').value = fmt(today);
+            }
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const prod = document.getElementById('filter-product').value;
+            let filtered = allData;
+            if (prod) filtered = filtered.filter(r => r.produit === prod);
+            allData = filtered;
+            applyClientFilters();
+        }
+
+        function applyClientFilters() {
+            const search = document.getElementById('filter-search').value.toLowerCase().trim();
+            const dateFrom = document.getElementById('filter-date-from').value;
+            const dateTo = document.getElementById('filter-date-to').value;
+            const sortBy = document.getElementById('sort-by').value;
+
+            let filtered = allData.filter(r => {
+                if (dateFrom || dateTo) {
+                    const rowDate = parseDMY(r.date);
+                    if (rowDate) {
+                        if (dateFrom && rowDate < new Date(dateFrom)) return false;
+                        if (dateTo) { const to = new Date(dateTo); to.setHours(23,59,59); if (rowDate > to) return false; }
+                    }
+                }
+                if (search) {
+                    const rowText = `${r.id} ${r.produit} ${r.date} ${r.heure} ${r.taux}`.toLowerCase();
+                    if (!rowText.includes(search)) return false;
+                }
+                return true;
+            });
+
+            filtered.sort((a, b) => {
+                switch (sortBy) {
+                    case 'date-asc': return (parseDMY(a.date) - parseDMY(b.date)) || a.heure.localeCompare(b.heure);
+                    case 'qty-desc': return b.quantite - a.quantite;
+                    case 'qty-asc': return a.quantite - b.quantite;
+                    case 'rate-desc': return parseFloat(b.taux) - parseFloat(a.taux);
+                    case 'rate-asc': return parseFloat(a.taux) - parseFloat(b.taux);
+                    case 'product-asc': return a.produit.localeCompare(b.produit);
+                    default: return (parseDMY(b.date) - parseDMY(a.date)) || b.heure.localeCompare(a.heure);
+                }
+            });
+
+            displayData = filtered;
+            currentPage = 1;
+            trpByProduct = computeTRP(filtered);
+            updateSummary(filtered);
+            updateChart(filtered);
+            renderPage();
+        }
+
+        function updateSummary(data) {
+            document.getElementById('hist-total-records').textContent = data.length;
+            document.getElementById('total-count-badge').textContent = `${data.length} enregistrement${data.length !== 1 ? 's' : ''}`;
+            const totalParts = data.reduce((s, r) => s + (r.quantite || 0), 0);
+            document.getElementById('hist-total-parts').textContent = totalParts.toLocaleString('fr-FR');
+            const rates = data.map(r => parseFloat(r.taux.replace('%', ''))).filter(v => !isNaN(v));
+            const avgTRP = rates.length ? Math.round(rates.reduce((a,b)=>a+b,0) / rates.length) : 0;
+            document.getElementById('hist-avg-trp').textContent = `${avgTRP}%`;
+            const distinct = new Set(data.map(r => r.produit)).size;
+            document.getElementById('hist-distinct-products').textContent = distinct;
+        }
+
+        function updateChart(data) {
+            const prodCounts = {};
+            data.forEach(r => {
+                prodCounts[r.produit] = (prodCounts[r.produit] || 0) + r.quantite;
+            });
+            const labels = Object.keys(prodCounts).sort((a,b) => prodCounts[b] - prodCounts[a]).slice(0, 15);
+            const values = labels.map(l => prodCounts[l]);
+            const colors = ['#B9FF00','#00cc66','#dbb95c','#ff4444','#1F404E','#3b82f6','#a855f7','#06b6d4','#f97316','#84cc16'];
+
+            if (!histChart) {
+                const ctx = document.getElementById('histChart').getContext('2d');
+                histChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels, datasets: [{ label: 'Pièces totales', data: values, backgroundColor: colors.map(c => c + '99'), borderColor: colors, borderWidth: 2, borderRadius: 6 }] },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8C9498', font: { size: 10 }, maxRotation: 45 } },
+                            y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8C9498' }, beginAtZero: true }
+                        }
+                    }
+                });
+            } else {
+                histChart.data.labels = labels;
+                histChart.data.datasets[0].data = values;
+                histChart.data.datasets[0].backgroundColor = colors.map(c => c + '99');
+                histChart.data.datasets[0].borderColor = colors;
+                histChart.update();
+            }
+        }
+
+        function renderPage() {
+            const tbody = document.getElementById('hist-table-body');
+            const total = displayData.length;
+            const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const end = Math.min(start + PAGE_SIZE, total);
+            const pageRows = displayData.slice(start, end);
+            tbody.innerHTML = '';
+
+            if (pageRows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:3rem; color:var(--muted);"><i class="fa-solid fa-inbox" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>Aucun résultat</td></tr>`;
+            } else {
+                pageRows.forEach((r, idx) => {
+                    const rowNum = start + idx + 1;
+                    const rateVal = parseFloat(r.taux.replace('%', ''));
+                    let badgeClass = 'badge-lime';
+                    if (rateVal >= 100) badgeClass = 'badge-green';
+                    else if (rateVal > 0) badgeClass = 'badge-amber';
+                    const fillClass = rateVal >= 100 ? 'green' : (rateVal > 50 ? 'amber' : 'lime');
+                    const trpVal = trpByProduct[r.produit] !== undefined ? `${trpByProduct[r.produit]}%` : '-';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="color:var(--muted); font-size:0.75rem;">${rowNum}</td>
+                        <td><strong>#${r.id}</strong></td>
+                        <td>${r.date} <small style="color:var(--muted)">${r.heure}</small></td>
+                        <td><span class="badge badge-lime" style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${r.produit}">${r.produit}</span></td>
+                        <td><strong>${r.quantite}</strong></td>
+                        <td style="color:var(--muted)">${r.quantite_totale}</td>
+                        <td>
+                            <div class="progress-bar-container"><div class="progress-bar-fill ${fillClass}" style="width:${Math.min(rateVal,100)}%"></div></div>
+                            <span class="badge ${badgeClass}">${r.taux}</span>
+                        </td>
+                        <td><span class="trp-badge">${trpVal}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+            document.getElementById('page-info').textContent = `Page ${currentPage} / ${totalPages} (${total} lignes)`;
+            document.getElementById('btn-prev').disabled = currentPage <= 1;
+            document.getElementById('btn-next').disabled = currentPage >= totalPages;
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderPage();
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-product').value = '';
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            document.getElementById('filter-search').value = '';
+            document.getElementById('sort-by').value = 'date-desc';
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            // Re-generate data
+            allData = [];
+            const count = 30 + Math.floor(Math.random() * 20);
+            for (let i = 0; i < count; i++) allData.push(generateReading());
+            applyClientFilters();
+        }
+
+        function exportCSV() {
+            const headers = ['Ligne','ID','Date','Heure','Produit','Quantité','Total','Remplissage','TRP'];
+            const rows = displayData.map((r, idx) => [
+                idx + 1, r.id, r.date, r.heure, r.produit,
+                r.quantite, r.quantite_totale, r.taux,
+                trpByProduct[r.produit] !== undefined ? `${trpByProduct[r.produit]}%` : '-'
+            ]);
+            const csv = [headers, ...rows].map(row => row.join(';')).join('\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `historique_valeo_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
+
