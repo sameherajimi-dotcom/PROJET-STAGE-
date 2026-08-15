@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+ <html lang="fr">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Administration - Valeo</title>
+     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+     <style>
+         :root {
+             --valeo-lime: #B9FF00;
+             --valeo-blue: #1F404E;
+             --background: #080A0B;
+             --card: #101314;
+             --input: #181C1E;
+             --text: #FFFFFF;
+             --muted: #8C9498;
+             --border: rgba(255, 255, 255, 0.08);
+         }
+         * { margin:0; padding:0; box-sizing:border-box; }
+         body {
+             font-family: 'Inter', sans-serif;
+             background: var(--background);
+             min-height: 100vh;
+             color: var(--text);
+         }
+         .background { position:fixed; inset:0; pointer-events:none; }
+         .grid {
+             position:fixed; inset:0; pointer-events:none; z-index:0;
+             background-image: linear-gradient(rgba(185,255,0,0.025) 1px,transparent 1px), linear-gradient(90deg,rgba(185,255,0,0.025) 1px,transparent 1px);
+             background-size: 50px 50px;
+             mask-image: radial-gradient(ellipse at center, black, transparent 80%);
+         }
+         .glow {
+             position:fixed; width:450px; height:450px;
+             top:50%; left:50%; transform:translate(-50%,-50%);
+             background:var(--valeo-lime); opacity:0.025;
+             filter:blur(150px); border-radius:50%; pointer-events:none; z-index:0;
+         }
+        header {
+             position:relative; z-index:100;
+             background:var(--card); border-bottom:1px solid var(--border);
+             padding:0.875rem 2rem;
+             display:flex; justify-content:space-between; align-items:center;
+             gap:1rem; flex-wrap:wrap;
+         }
+         .header-title { display:flex; align-items:center; gap:0.75rem; }
+         .header-title img { width:40px; height:auto; }
+         .header-title h1 { font-size:1.25rem; font-weight:800; color:var(--valeo-lime); letter-spacing:3px; }
+         .header-nav {
+             display:flex; gap:0.25rem; align-items:center;
+             background:var(--background); border-radius:10px;
+             padding:0.25rem; border:1px solid var(--border);
+         }
+         .nav-link {
+             text-decoration:none; color:var(--muted); font-size:0.85rem;
+             font-weight:500; padding:0.5rem 1rem; border-radius:7px;
+             transition:all 0.2s; display:flex; align-items:center; gap:0.4rem;
+         }
+         .nav-link:hover { color:var(--text); background:var(--input); }
+        .nav-link.active { background:var(--valeo-lime); color:var(--background); font-weight:700; }
+        .account-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 1rem; flex-shrink:0; }
+        .account-btn:hover { border-color: var(--valeo-lime); color: var(--valeo-lime); background: rgba(185,255,0,0.05); }
+        .account-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.5rem; min-width: 220px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); display: none; z-index: 100; }
+        .account-dropdown.visible { display: block; }
+        .dropdown-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 0.85rem; transition: background 0.15s; cursor: pointer; }
+        .dropdown-item:hover { background: var(--input); }
+        .dropdown-item i { width: 18px; color: var(--valeo-lime); font-size: 0.9rem; }
+        .dropdown-divider { height: 1px; background: var(--border); margin: 0.35rem 0; }
+        .dropdown-userinfo { padding: 0.6rem 0.75rem; }
+        .dropdown-userinfo .name { font-weight: 600; font-size: 0.9rem; }
+        .dropdown-userinfo .role { color: var(--muted); font-size: 0.75rem; }
+        .header-user { position: relative; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+        .user-email { color: var(--muted); font-size: 0.85rem; }
+        .main-content {
+             position:relative; z-index:1;
+             padding:1.5rem 2rem; max-width:1200px; margin:0 auto;
+         }
+         .page-header { margin-bottom:1.5rem; }
+         .page-header h2 { font-size:1.5rem; font-weight:700; display:flex; align-items:center; gap:0.5rem; }
+         .page-header h2 i { color:var(--valeo-lime); }
+         .page-header p { color:var(--muted); font-size:0.875rem; margin-top:0.25rem; }
+         .panel {
+             background:var(--card); border:1px solid var(--border);
+             border-radius:14px; overflow:hidden;
+         }
+         .panel-header {
+             padding:1rem 1.5rem; border-bottom:1px solid var(--border);
+             display:flex; justify-content:space-between; align-items:center;
+         }
+         .panel-title { font-size:1rem; font-weight:600; display:flex; align-items:center; gap:0.5rem; }
+         table { width:100%; border-collapse:collapse; }
+         th {
+             padding:0.75rem 1rem; font-size:0.68rem; text-transform:uppercase;
+             letter-spacing:0.05em; color:var(--muted); border-bottom:2px solid var(--border);
+             font-weight:600; text-align:left; background:var(--background);
+         }
+         td { padding:0.7rem 1rem; font-size:0.85rem; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text); }
+         tr:hover td { background:rgba(185,255,0,0.03); }
+         .badge {
+             display:inline-flex; align-items:center; padding:0.2rem 0.5rem;
+             border-radius:6px; font-size:0.7rem; font-weight:600;
+         }
+         .badge-lime { background:rgba(185,255,0,0.12); color:var(--valeo-lime); border:1px solid rgba(185,255,0,0.25); }
+         .badge-green { background:rgba(0,204,102,0.12); color:#00cc66; border:1px solid rgba(0,204,102,0.25); }
+         .badge-amber { background:rgba(219,185,92,0.12); color:#dbb95c; border:1px solid rgba(219,185,92,0.25); }
+         .code-cell { font-family:monospace; letter-spacing:0.05em; color:var(--valeo-lime); font-weight:700; }
+         .role-select {
+             background:var(--input); border:1px solid var(--border);
+             border-radius:6px; color:var(--text); padding:0.25rem 0.5rem;
+             font-size:0.8rem; font-family:'Inter',sans-serif; outline:none; cursor:pointer;
+         }
+         .role-select:focus { border-color:var(--valeo-lime); }
+         .btn-icon {
+             display:inline-flex; align-items:center; gap:0.3rem;
+             padding:0.35rem 0.7rem; border-radius:6px; border:1px solid transparent;
+             font-size:0.75rem; font-family:'Inter',sans-serif; font-weight:600;
+             cursor:pointer; transition:all 0.2s;
+         }
+         .btn-danger { background:rgba(255,68,68,0.1); color:#ff4444; border-color:rgba(255,68,68,0.2); }
+         .btn-danger:hover { background:rgba(255,68,68,0.2); }
+         .btn-edit { background:rgba(185,255,0,0.1); color:var(--valeo-lime); border-color:rgba(185,255,0,0.2); }
+         .btn-edit:hover { background:rgba(185,255,0,0.2); }
+         .admin-badge { background:rgba(185,255,0,0.15); color:var(--valeo-lime); border:1px solid var(--valeo-lime); padding:0.15rem 0.4rem; border-radius:4px; font-size:0.6rem; font-weight:700; text-transform:uppercase; }
+         .empty-state { text-align:center; padding:3rem; color:var(--muted); }
+         .empty-state i { font-size:2.5rem; margin-bottom:0.5rem; display:block; }
+         @media(max-width:768px) {
+             header { flex-direction:column; padding:0.875rem 1rem; }
+             .main-content { padding:1rem; }
+             table { min-width:600px; }
+         }
+     </style>
+ </head>
+ <body>
+     <div class="background"></div>
+     <div class="grid"></div>
+     <div class="glow"></div>
+
+         <header>
+         <div class="header-title">
+             <img src="images%20(1).png" alt="Valeo">
+             <h1>VALEO</h1>
+         </div>
+         <nav class="header-nav">
+             <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+             <a href="historique.html" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> Historique</a>
+             <a href="live.html" class="nav-link"><i class="fa-solid fa-video"></i> Session Live</a>
+             <a href="admin.html" class="nav-link active"><i class="fa-solid fa-shield-halved"></i> Admin</a>
+         </nav>
+         <div class="header-user">
+             <span class="user-email" id="userDisplay"></span>
+             <button class="account-btn" id="accountBtn" title="Mon compte"><i class="fa-regular fa-circle-user"></i></button>
+             <div class="account-dropdown" id="accountDropdown">
+                 <div class="dropdown-userinfo">
+                     <div class="name" id="dropdownName">Utilisateur</div>
+                     <div class="role" id="dropdownRole">Rôle</div>
+                     <div class="role" id="dropdownEmail" style="color:var(--muted);font-size:0.7rem;margin-top:2px;">email</div>
+                 </div>
+                 <div class="dropdown-divider"></div>
+                 <a href="settings.html" class="dropdown-item"><i class="fa-solid fa-gear"></i> Paramètres</a>
+                 <div class="dropdown-divider"></div>
+                 <div class="dropdown-item" onclick="logout()" style="color:#ff4444;"><i class="fa-solid fa-arrow-right-from-bracket" style="color:#ff4444;"></i> Déconnexion</div>
+             </div>
+         </div>
+     </header>
+
+     <div class="main-content">
+         <div class="page-header">
+             <h2><i class="fa-solid fa-shield-halved"></i> Administration</h2>
+             <p>Gestion des comptes utilisateurs Valeo</p>
+         </div>
+
+         <div class="panel">
+             <div class="panel-header">
+                 <div class="panel-title"><i class="fa-solid fa-users"></i> Utilisateurs</div>
+                 <span style="color:var(--muted);font-size:0.8rem;" id="userCount">Chargement...</span>
+             </div>
+             <div style="overflow-x:auto;">
+                 <table>
+                     <thead>
+                         <tr>
+                             <th>ID</th>
+                             <th>Nom</th>
+                             <th>Rôle</th>
+                             <th>Code</th>
+                             <th>Admin</th>
+                             <th>Date</th>
+                             <th>Actions</th>
+                         </tr>
+                     </thead>
+                     <tbody id="adminTableBody">
+                         <tr><td colspan="7" class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Chargement...</td></tr>
+                     </tbody>
+                 </table>
+             </div>
+     </div>
+
+     <script>
+         const validRoles = ['Ingénieur', 'Technicien', 'Ouvrier'];
+
+         document.addEventListener('DOMContentLoaded', function() {
+             loadUsers();
+
+             // User info display
+             const userName = sessionStorage.getItem('valeo_userName') || 'Utilisateur';
+             const userCode = sessionStorage.getItem('valeo_userCode') || '';
+             const userEmail = sessionStorage.getItem('valeo_userEmail') || '';
+             const userRole = sessionStorage.getItem('valeo_userRole') || '';
+             document.getElementById('userDisplay').textContent = userCode || userName;
+             document.getElementById('dropdownName').textContent = userName;
+             document.getElementById('dropdownRole').textContent = userRole || '—';
+             document.getElementById('dropdownEmail').textContent = userEmail || '—';
+
+             // Account dropdown toggle
+             const accountBtn = document.getElementById('accountBtn');
+             const dropdown = document.getElementById('accountDropdown');
+             if (accountBtn) {
+                 accountBtn.addEventListener('click', function(e) {
+                     e.stopPropagation();
+                     dropdown.classList.toggle('visible');
+                 });
+                 document.addEventListener('click', function() {
+                     dropdown.classList.remove('visible');
+                 });
+                 dropdown.addEventListener('click', function(e) {
+                     e.stopPropagation();
+                 });
+             }
+         });
+
+         function logout() {
+             sessionStorage.removeItem('valeo_userName');
+             sessionStorage.removeItem('valeo_userEmail');
+             sessionStorage.removeItem('valeo_userRole');
+             sessionStorage.removeItem('valeo_userId');
+             sessionStorage.removeItem('valeo_isAdmin');
+             window.location.href = 'loading.html';
+         }
+
+         function loadUsers() {
+             const tbody = document.getElementById('adminTableBody');
+             const count = document.getElementById('userCount');
+
+             apiGetUsers().then(data => {
+                 if (!data.success || !data.users || data.users.length === 0) {
+                     tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-users-slash"></i>Aucun utilisateur</td></tr>';
+                     count.textContent = '0 utilisateur';
+                     return;
+                 }
+
+                 count.textContent = data.users.length + ' utilisateur' + (data.users.length > 1 ? 's' : '');
+                 tbody.innerHTML = '';
+
+                 data.users.forEach(user => {
+                     const tr = document.createElement('tr');
+                     const isAdmin = user.is_admin === 1;
+                     const dateStr = user.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR') : '-';
+
+                     let roleOptions = '';
+                     validRoles.forEach(r => {
+                         roleOptions += `<option value="${r}"${user.role === r ? ' selected' : ''}>${r}</option>`;
+                     });
+
+                     tr.innerHTML = `
+                         <td style="color:var(--muted);font-size:0.75rem;">${user.id}</td>
+                         <td><strong>${user.first_name || ''} ${user.last_name || ''}</strong></td>
+                         <td>
+                             ${isAdmin
+                                 ? '<span class="admin-badge">ADMIN</span>'
+                                 : `<select class="role-select" onchange="updateRole(${user.id}, this.value)">
+                                     ${roleOptions}
+                                 </select>`
+                             }
+                         </td>
+                         <td><span class="code-cell">${user.login_code || '-'}</span></td>
+                         <td>${isAdmin ? '<span style="color:var(--valeo-lime)"><i class="fa-solid fa-check"></i></span>' : '<span style="color:var(--muted)">—</span>'}</td>
+                         <td style="color:var(--muted);font-size:0.8rem;">${dateStr}</td>
+                         <td>
+                             ${!isAdmin
+                                 ? `<button class="btn-icon btn-danger" onclick="deleteUser(${user.id}, '${user.first_name || ''} ${user.last_name || ''}')">
+                                     <i class="fa-solid fa-trash-can"></i> Supprimer
+                                 </button>`
+                                 : '<span style="color:var(--muted);font-size:0.75rem;">Protégé</span>'
+                             }
+                         </td>
+                     `;
+                     tbody.appendChild(tr);
+                 });
+             }).catch(() => {
+                 tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-exclamation-triangle"></i>Erreur de chargement. Vérifiez que le serveur est démarré.</td></tr>';
+             });
+         }
+
+         function deleteUser(id, name) {
+             if (!confirm(`Supprimer l'utilisateur "${name}" ? Cette action est irréversible.`)) return;
+             apiDeleteUser(id).then(data => {
+                 if (data.success) {
+                     loadUsers();
+                 } else {
+                     alert('Erreur lors de la suppression.');
+                 }
+             });
+         }
+
+         function updateRole(id, newRole) {
+             apiUpdateUserRole(id, newRole).then(data => {
+                 if (data.success) {
+                     loadUsers();
+                 }
+             });
+         }
+     </script>
+     <script src="js/api.js"></script>
+ </body>
+ </html>

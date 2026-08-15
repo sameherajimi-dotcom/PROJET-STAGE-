@@ -1,0 +1,18 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+
+# Temporary & local files
+.tmp/
+.vscode/
+*.log
+
+# Server uploads/captures
+server/captures/

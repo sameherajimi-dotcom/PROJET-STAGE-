@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramètres - Valeo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --valeo-lime: #B9FF00; --valeo-blue: #1F404E; --background: #080A0B; --card: #101314; --input: #181C1E; --text: #FFFFFF; --muted: #8C9498; --border: rgba(255,255,255,0.08); --error: #FF5C5C; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--background); min-height: 100vh; color: var(--text); display: flex; flex-direction: column; }
+        .background { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 20% 50%, rgba(185,255,0,0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 50%, rgba(31,64,78,0.06) 0%, transparent 50%); }
+        .grid { position: fixed; inset: 0; pointer-events: none; z-index: 0; background-image: linear-gradient(rgba(185,255,0,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(185,255,0,0.025) 1px,transparent 1px); background-size: 50px 50px; mask-image: radial-gradient(ellipse at center,black,transparent 80%); }
+        .glow { position: fixed; width: 450px; height: 450px; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--valeo-lime); opacity: 0.025; filter: blur(150px); border-radius: 50%; pointer-events: none; z-index: 0; }
+        
+        header { position: relative; z-index: 100; background: var(--card); border-bottom: 1px solid var(--border); padding: 0.875rem 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; position: sticky; top: 0; }
+        .header-title { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+        .header-title img { width: 40px; height: auto; }
+        .header-title h1 { font-size: 1.25rem; font-weight: 800; color: var(--valeo-lime); letter-spacing: 3px; }
+        .header-nav { display: flex; gap: 0.25rem; align-items: center; background: var(--background); border-radius: 10px; padding: 0.25rem; border: 1px solid var(--border); }
+        .nav-link { text-decoration: none; color: var(--muted); font-size: 0.85rem; font-weight: 500; padding: 0.5rem 1rem; border-radius: 7px; transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; cursor: pointer; }
+        .nav-link:hover { color: var(--text); background: var(--input); }
+        .nav-link.active { background: var(--valeo-lime); color: var(--background); font-weight: 700; }
+
+        .main-content { position: relative; z-index: 1; flex: 1; padding: 1.5rem 2rem; max-width: 800px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 1.5rem; }
+        .page-header { margin-bottom: 0.5rem; }
+        .page-header h2 { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .page-header h2 i { color: var(--valeo-lime); }
+        .page-header p { color: var(--muted); font-size: 0.875rem; margin-top: 0.25rem; }
+
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+        .panel-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .panel-body { padding: 1.5rem; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; color: #DDE1E2; font-size: 0.85rem; font-weight: 500; margin-bottom: 6px; }
+        .form-group input, .form-group select { width: 100%; padding: 0 16px; height: 48px; background: var(--input); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: var(--text); font-size: 14px; transition: border 0.2s; outline: none; font-family: 'Inter', sans-serif; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--valeo-lime); box-shadow: 0 0 0 3px rgba(185,255,0,0.08); }
+        .form-group input::placeholder { color: #626A6E; }
+        .form-group select option { background: var(--input); color: var(--text); }
+        .form-group input:disabled { opacity: 0.5; cursor: not-allowed; }
+        .form-group .input-hint { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+        .form-row { display: flex; gap: 1rem; }
+        .form-row .form-group { flex: 1; }
+
+        .btn-save { width: 100%; height: 52px; background: var(--valeo-lime); color: #101313; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: transform 0.2s; letter-spacing: 1.5px; text-transform: uppercase; font-family: 'Inter', sans-serif; }
+        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(185,255,0,0.2); }
+        .btn-save:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .code-display { background: rgba(185,255,0,0.06); border: 1px dashed rgba(185,255,0,0.3); border-radius: 10px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .code-display .code-label { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+        .code-display .code-value { font-family: monospace; font-size: 1.3rem; font-weight: 700; color: var(--valeo-lime); letter-spacing: 3px; }
+        .code-display .code-note { color: var(--muted); font-size: 0.7rem; }
+
+        .success-message { background: rgba(0,204,102,0.1); border: 1px solid rgba(0,204,102,0.25); border-radius: 10px; padding: 0.75rem 1rem; color: var(--accent-green, #00cc66); font-size: 0.9rem; display: none; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .success-message.visible { display: flex; }
+        .error-message { background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.25); border-radius: 10px; padding: 0.75rem 1rem; color: #ff4444; font-size: 0.9rem; display: none; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .error-message.visible { display: flex; }
+
+        .spinner { display: none; width: 20px; height: 20px; border: 2px solid rgba(16,19,19,0.2); border-top-color: #101313; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; vertical-align: middle; }
+        .spinner.visible { display: inline-block; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .panel { animation: fadeInUp 0.5s ease-out; }
+
+        .app-footer { position: relative; z-index: 1; background: var(--card); border-top: 1px solid var(--border); padding: 0.75rem 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--muted); flex-wrap: wrap; gap: 0.5rem; margin-top: auto; }
+        .app-footer a { color: var(--valeo-lime); text-decoration: none; }
+        .app-footer a:hover { text-decoration: underline; }
+
+        /* Account dropdown */
+        .header-user { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; position: relative; }
+        .header-user .user-email { color: var(--muted); font-size: 0.85rem; }
+        .btn-logout { padding: 0.4rem 1rem; background: transparent; border: 1px solid rgba(185,255,0,0.3); border-radius: 7px; color: var(--valeo-lime); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px; font-family: 'Inter', sans-serif; }
+        .btn-logout:hover { background: rgba(185,255,0,0.06); border-color: var(--valeo-lime); }
+        .account-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 1rem; }
+        .account-btn:hover { border-color: var(--valeo-lime); color: var(--valeo-lime); background: rgba(185,255,0,0.05); }
+        .account-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.5rem; min-width: 220px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); display: none; z-index: 100; }
+        .account-dropdown.visible { display: block; }
+        .dropdown-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 0.85rem; transition: background 0.15s; cursor: pointer; }
+        .dropdown-item:hover { background: var(--input); }
+        .dropdown-item i { width: 18px; color: var(--valeo-lime); font-size: 0.9rem; }
+        .dropdown-divider { height: 1px; background: var(--border); margin: 0.35rem 0; }
+        .dropdown-userinfo { padding: 0.6rem 0.75rem; }
+        .dropdown-userinfo .name { font-weight: 600; font-size: 0.9rem; }
+        .dropdown-userinfo .role { color: var(--muted); font-size: 0.75rem; }
+
+        @media (max-width: 768px) { header { flex-direction: column; padding: 0.875rem 1rem; } .main-content { padding: 1rem; } .form-row { flex-direction: column; gap: 0; } }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="grid"></div>
+    <div class="glow"></div>
+
+    <header>
+        <div class="header-title">
+            <img src="images%20(1).png" alt="Valeo">
+            <h1>VALEO</h1>
+        </div>
+        <nav class="header-nav" id="mainNav">
+            <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="historique.html" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> Historique</a>
+            <a href="live.html" class="nav-link"><i class="fa-solid fa-video"></i> Session Live</a>
+            <a href="admin.html" class="nav-link" id="navAdmin" style="display:none;"><i class="fa-solid fa-shield-halved"></i> Admin</a>
+        </nav>
+        <div class="header-user">
+            <span style="color: var(--muted); font-size: 0.85rem; display:flex; align-items:center; gap:0.5rem;">
+                <i class="fa-regular fa-calendar"></i> <span id="current-date">--</span>
+                <span style="opacity:0.3;">|</span>
+                <i class="fa-regular fa-clock"></i> <span id="current-time">--:--:--</span>
+            </span>
+            <span class="user-email" id="userDisplay">Utilisateur</span>
+            <button class="account-btn" id="accountBtn" title="Mon compte"><i class="fa-regular fa-circle-user"></i></button>
+            <div class="account-dropdown" id="accountDropdown">
+                <div class="dropdown-userinfo">
+                    <div class="name" id="dropdownName">Utilisateur</div>
+                    <div class="role" id="dropdownRole">Rôle</div>
+                    <div class="role" id="dropdownEmail" style="color:var(--muted);font-size:0.7rem;margin-top:2px;">email</div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a href="settings.html" class="dropdown-item"><i class="fa-solid fa-gear"></i> Paramètres</a>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item" onclick="logout()" style="color:var(--accent-red, #ff4444);"><i class="fa-solid fa-arrow-right-from-bracket" style="color:var(--accent-red, #ff4444);"></i> Déconnexion</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h2><i class="fa-solid fa-gear"></i> Paramètres du Compte</h2>
+            <p>Modifiez vos informations personnelles. Le code unique ne peut pas être changé.</p>
+        </div>
+
+        <!-- Profil Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fa-regular fa-circle-user"></i> Mon Profil</div>
+            </div>
+            <div class="panel-body">
+                <div class="success-message" id="successMsg"><i class="fa-solid fa-circle-check"></i> <span id="successText">Profil mis à jour avec succès !</span></div>
+                <div class="error-message" id="errorMsg"><i class="fa-solid fa-circle-exclamation"></i> <span id="errorText">Erreur lors de la mise à jour.</span></div>
+
+                <div class="code-display">
+                    <div>
+                        <div class="code-label">Code unique</div>
+                        <div class="code-value" id="displayLoginCode">---</div>
+                    </div>
+                    <div class="code-note"><i class="fa-solid fa-lock"></i> Non modifiable</div>
+                </div>
+
+                <form id="settingsForm" novalidate>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editFirstName">Prénom</label>
+                            <input type="text" id="editFirstName" placeholder="Votre prénom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editLastName">Nom</label>
+                            <input type="text" id="editLastName" placeholder="Votre nom" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editEmail">Email professionnel</label>
+                        <input type="email" id="editEmail" placeholder="prenom.nom@valeo.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRole">Rôle</label>
+                        <select id="editRole" required>
+                            <option value="Ingénieur">Ingénieur</option>
+                            <option value="Technicien">Technicien</option>
+                            <option value="Ouvrier">Ouvrier</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-save" id="saveBtn">
+                        <span id="saveBtnText"><i class="fa-solid fa-floppy-disk"></i> Enregistrer les modifications</span>
+                        <span class="spinner" id="saveSpinner"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Mot de passe Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fa-solid fa-lock"></i> Changer le Mot de Passe</div>
+            </div>
+            <div class="panel-body">
+                <div class="success-message" id="pwdSuccessMsg"><i class="fa-solid fa-circle-check"></i> <span id="pwdSuccessText">Mot de passe modifié avec succès !</span></div>
+                <div class="error-message" id="pwdErrorMsg"><i class="fa-solid fa-circle-exclamation"></i> <span id="pwdErrorText">Erreur lors du changement.</span></div>
+
+                <form id="passwordForm" novalidate>
+                    <div class="form-group">
+                        <label for="currentPassword">Mot de passe actuel</label>
+                        <input type="password" id="currentPassword" placeholder="Entrez votre mot de passe actuel" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Nouveau mot de passe</label>
+                        <input type="password" id="newPassword" placeholder="Minimum 8 caractères" required minlength="8">
+                        <div class="input-hint">Le mot de passe doit contenir au moins 8 caractères</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirmer le nouveau mot de passe</label>
+                        <input type="password" id="confirmNewPassword" placeholder="Confirmez votre nouveau mot de passe" required>
+                    </div>
+                    <button type="submit" class="btn-save" id="pwdSaveBtn">
+                        <span id="pwdSaveBtnText"><i class="fa-solid fa-key"></i> Modifier le mot de passe</span>
+                        <span class="spinner" id="pwdSaveSpinner"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Password Change Panel (JavaScript) -->
+    </div>
+
+    <footer class="app-footer">
+        <span>&copy; 2025 Valeo — Tous droits réservés</span>
+        <span>Version 1.0.0 | <a href="#">Support</a></span>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        // ─── Clock ───
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleDateString('fr-FR');
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('fr-FR');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // ─── User info ───
+        const userId = sessionStorage.getItem('valeo_userId');
+        const userName = sessionStorage.getItem('valeo_userName') || 'Utilisateur';
+        const userEmail = sessionStorage.getItem('valeo_userEmail') || '';
+        const userRole = sessionStorage.getItem('valeo_userRole') || '';
+        const userCode = sessionStorage.getItem('valeo_userCode') || '';
+
+        document.getElementById('userDisplay').textContent = userCode || userName;
+
+        // ─── Admin nav ───
+        document.addEventListener('DOMContentLoaded', function() {
+            const isAdmin = sessionStorage.getItem('valeo_isAdmin') === 'true';
+            const navAdmin = document.getElementById('navAdmin');
+            if (navAdmin && isAdmin) {
+                navAdmin.style.display = 'inline-flex';
+            }
+            loadUserProfile();
+        });
+
+        // ─── Account dropdown ───
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountBtn = document.getElementById('accountBtn');
+            const dropdown = document.getElementById('accountDropdown');
+
+            // Set dropdown info
+            document.getElementById('dropdownName').textContent = userName;
+            document.getElementById('dropdownRole').textContent = userRole || '—';
+            document.getElementById('dropdownEmail').textContent = userEmail || '—';
+
+            accountBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdown.classList.toggle('visible');
+            });
+
+            document.addEventListener('click', function() {
+                dropdown.classList.remove('visible');
+            });
+
+            dropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+
+        // ─── Load Profile ───
+        async function loadUserProfile() {
+            if (!userId) {
+                window.location.href = 'loading.html';
+                return;
+            }
+
+            try {
+                const data = await apiGetUser(userId);
+                if (data.success && data.user) {
+                    const u = data.user;
+                    document.getElementById('editFirstName').value = u.firstName || '';
+                    document.getElementById('editLastName').value = u.lastName || '';
+                    document.getElementById('editEmail').value = u.email || '';
+                    document.getElementById('editRole').value = u.role || 'Technicien';
+                    document.getElementById('displayLoginCode').textContent = u.loginCode || '---';
+                }
+            } catch (e) {
+                showError('Erreur de chargement du profil.');
+            }
+        }
+
+        // ─── Save Profile ───
+        document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const firstName = document.getElementById('editFirstName').value.trim();
+            const lastName = document.getElementById('editLastName').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const role = document.getElementById('editRole').value;
+
+            // Validation
+            if (!firstName || !lastName || !email) {
+                showError('Tous les champs sont requis.');
+                return;
+            }
+
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                showError('Format d\'email invalide.');
+                return;
+            }
+
+            // UI loading
+            document.getElementById('saveBtnText').style.display = 'none';
+            document.getElementById('saveSpinner').classList.add('visible');
+            document.getElementById('saveBtn').disabled = true;
+
+            try {
+                const data = await apiUpdateUserProfile(parseInt(userId), firstName, lastName, email, role);
+                
+                document.getElementById('saveSpinner').classList.remove('visible');
+                document.getElementById('saveBtnText').style.display = 'inline';
+                document.getElementById('saveBtn').disabled = false;
+
+                if (data.success) {
+                    // Update session storage
+                    sessionStorage.setItem('valeo_userName', firstName + ' ' + lastName);
+                    sessionStorage.setItem('valeo_userRole', role);
+                    sessionStorage.setItem('valeo_userEmail', email);
+                    
+                    // Update display
+                    document.getElementById('userDisplay').textContent = email || firstName + ' ' + lastName;
+                    document.getElementById('dropdownName').textContent = firstName + ' ' + lastName;
+                    document.getElementById('dropdownRole').textContent = role;
+                    document.getElementById('dropdownEmail').textContent = email;
+
+                    showSuccess('Profil mis à jour avec succès !');
+                } else {
+                    showError(data.message || 'Erreur lors de la mise à jour.');
+                }
+            } catch (e) {
+                document.getElementById('saveSpinner').classList.remove('visible');
+                document.getElementById('saveBtnText').style.display = 'inline';
+                document.getElementById('saveBtn').disabled = false;
+                showError('Erreur de connexion au serveur.');
+            }
+        });
+
+        // ─── Password Change ───
+        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmNewPassword').value;
+
+            // Validation
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showPwdError('Tous les champs sont requis.');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                showPwdError('Le nouveau mot de passe doit contenir au moins 8 caractères.');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showPwdError('Les nouveaux mots de passe ne correspondent pas.');
+                return;
+            }
+
+            // UI loading
+            document.getElementById('pwdSaveBtnText').style.display = 'none';
+            document.getElementById('pwdSaveSpinner').classList.add('visible');
+            document.getElementById('pwdSaveBtn').disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/users/change-password', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: parseInt(userId), currentPassword, newPassword })
+                });
+                const data = await response.json();
+
+                document.getElementById('pwdSaveSpinner').classList.remove('visible');
+                document.getElementById('pwdSaveBtnText').style.display = 'inline';
+                document.getElementById('pwdSaveBtn').disabled = false;
+
+                if (data.success) {
+                    showPwdSuccess('Mot de passe modifié avec succès !');
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmNewPassword').value = '';
+                } else {
+                    showPwdError(data.message || 'Erreur lors du changement.');
+                }
+            } catch (e) {
+                document.getElementById('pwdSaveSpinner').classList.remove('visible');
+                document.getElementById('pwdSaveBtnText').style.display = 'inline';
+                document.getElementById('pwdSaveBtn').disabled = false;
+                showPwdError('Erreur de connexion au serveur.');
+            }
+        });
+
+        function showPwdSuccess(msg) {
+            document.getElementById('pwdSuccessText').textContent = msg;
+            document.getElementById('pwdSuccessMsg').classList.add('visible');
+            document.getElementById('pwdErrorMsg').classList.remove('visible');
+            setTimeout(() => document.getElementById('pwdSuccessMsg').classList.remove('visible'), 4000);
+        }
+
+        function showPwdError(msg) {
+            document.getElementById('pwdErrorText').textContent = msg;
+            document.getElementById('pwdErrorMsg').classList.add('visible');
+            document.getElementById('pwdSuccessMsg').classList.remove('visible');
+        }
+
+        function showSuccess(msg) {
+            document.getElementById('successText').textContent = msg;
+            document.getElementById('successMsg').classList.add('visible');
+            document.getElementById('errorMsg').classList.remove('visible');
+            setTimeout(() => document.getElementById('successMsg').classList.remove('visible'), 4000);
+        }
+
+        function showError(msg) {
+            document.getElementById('errorText').textContent = msg;
+            document.getElementById('errorMsg').classList.add('visible');
+            document.getElementById('successMsg').classList.remove('visible');
+        }
+
+        // ─── Logout ───
+        function logout() {
+            sessionStorage.removeItem('valeo_userName');
+            sessionStorage.removeItem('valeo_userEmail');
+            sessionStorage.removeItem('valeo_userRole');
+            sessionStorage.removeItem('valeo_userId');
+            sessionStorage.removeItem('valeo_isAdmin');
+            window.location.href = 'loading.html';
+        }
+    </script>
+</body>
+</html>
+
