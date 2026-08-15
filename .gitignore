@@ -1,0 +1,58 @@
+# .gitignore généré — ignore les fichiers/repères sensibles ou volumineux
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+env/
+venv/
+.venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# SQLite / bases locales
+*.sqlite3
+*.db
+
+# Environnements et secrets
+.env
+.env.local
+.env.*.local
+secrets/
+*.pem
+*.key
+
+# IDE / OS
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Captures / médias (si vous ne voulez pas suivre les images/vidéos)
+captures/
+server/captures/
+
+# Static build outputs
+dist/
+build/
+
+# Misc
+.cache/
+.pytest_cache/
