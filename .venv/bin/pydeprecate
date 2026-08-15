@@ -1,6 +1,0 @@
-#!/home/iyed/Bureau/VALEO/.venv/bin/python
-import sys
-from deprecate._cli import cli
-if __name__ == '__main__':
-    sys.argv[0] = sys.argv[0].removesuffix('.exe')
-    sys.exit(cli())
