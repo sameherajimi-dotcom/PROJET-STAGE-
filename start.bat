@@ -1,4 +1,3 @@
-
 @echo off
 setlocal EnableExtensions
 
@@ -41,8 +40,8 @@ cls
 echo.
 echo ======================================================
 echo.
-echo              VALEO INTELLIGENT CAMERA
-echo              AI Vision Control System
+echo               VALEO INTELLIGENT CAMERA
+echo               AI Vision Control System
 echo.
 echo ======================================================
 echo.
@@ -226,6 +225,9 @@ if not exist "%VENV%\Scripts\python.exe" (
     echo Python environment created successfully.
 )
 
+REM S'assurer que pip est bien présent dans le venv
+"%VENV%\Scripts\python.exe" -m ensurepip --upgrade >nul 2>&1
+
 echo.
 echo Python environment ready.
 echo.
@@ -329,7 +331,7 @@ color 0B
 echo.
 echo ======================================================
 echo.
-echo              STARTING VALEO SERVER
+echo               STARTING VALEO SERVER
 echo.
 echo ======================================================
 echo.
@@ -365,7 +367,7 @@ REM ================================================================
 echo.
 echo.
 echo ======================================================
-echo              VALEO SERVER STOPPED
+echo                VALEO SERVER STOPPED
 echo ======================================================
 echo.
 

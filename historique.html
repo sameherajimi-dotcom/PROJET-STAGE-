@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Historique - Valeo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
             --valeo-lime: #B9FF00;
@@ -16,745 +19,2603 @@
             --input: #181C1E;
             --text: #FFFFFF;
             --muted: #8C9498;
-            --border: rgba(255, 255, 255, 0.08);
-            --accent-green: #00cc66;
-            --accent-amber: #dbb95c;
-            --accent-red: #ff4444;
+            --border: rgba(255,255,255,0.08);
+            --green: #00cc66;
+            --amber: #dbb95c;
+            --red: #ff4444;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
             background: var(--background);
-            min-height: 100vh;
             color: var(--text);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
         .background {
-            position: fixed; inset: 0; pointer-events: none;
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
             background:
-                radial-gradient(ellipse at 20% 50%, rgba(185, 255, 0, 0.04) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 50%, rgba(31, 64, 78, 0.06) 0%, transparent 50%);
+                radial-gradient(
+                    ellipse at 20% 50%,
+                    rgba(185,255,0,0.04) 0%,
+                    transparent 50%
+                ),
+                radial-gradient(
+                    ellipse at 80% 50%,
+                    rgba(31,64,78,0.06) 0%,
+                    transparent 50%
+                );
         }
 
         .grid {
-            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
             background-image:
-                linear-gradient(rgba(185, 255, 0, 0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(185, 255, 0, 0.025) 1px, transparent 1px);
+                linear-gradient(
+                    rgba(185,255,0,0.025) 1px,
+                    transparent 1px
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(185,255,0,0.025) 1px,
+                    transparent 1px
+                );
             background-size: 50px 50px;
-            mask-image: radial-gradient(ellipse at center, black, transparent 80%);
-        }
-
-        .glow {
-            position: fixed; width: 450px; height: 450px;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: var(--valeo-lime); opacity: 0.025;
-            filter: blur(150px); border-radius: 50%; pointer-events: none; z-index: 0;
+            mask-image: radial-gradient(
+                ellipse at center,
+                black,
+                transparent 80%
+            );
         }
 
         header {
-            position: relative; z-index: 100;
-            background: var(--card); border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
             padding: 0.875rem 2rem;
-            display: flex; justify-content: space-between; align-items: center;
-            gap: 1rem; flex-wrap: wrap; position: sticky; top: 0;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
-        .header-title { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
-        .header-title img { width: 40px; height: auto; }
-        .header-title h1 { font-size: 1.25rem; font-weight: 800; color: var(--valeo-lime); letter-spacing: 3px; }
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-title img {
+            width: 40px;
+            height: auto;
+        }
+
+        .header-title h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--valeo-lime);
+            letter-spacing: 3px;
+        }
 
         .header-nav {
-            display: flex; gap: 0.25rem; align-items: center;
-            background: var(--background); border-radius: 10px;
-            padding: 0.25rem; border: 1px solid var(--border);
+            display: flex;
+            gap: 0.25rem;
+            align-items: center;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.25rem;
         }
 
         .nav-link {
-            text-decoration: none; color: var(--muted); font-size: 0.85rem;
-            font-weight: 500; padding: 0.5rem 1rem; border-radius: 7px;
-            transition: all 0.2s ease; display: flex; align-items: center; gap: 0.4rem;
-            white-space: nowrap; cursor: pointer;
-        }
-        .nav-link:hover { color: var(--text); background: var(--input); }
-        .nav-link.active { background: var(--valeo-lime); color: var(--background); font-weight: 700; }
+            text-decoration: none;
+            color: var(--muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 7px;
 
-        .account-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 1rem; flex-shrink:0; }
-        .account-btn:hover { border-color: var(--valeo-lime); color: var(--valeo-lime); background: rgba(185,255,0,0.05); }
-        .account-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.5rem; min-width: 220px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); display: none; z-index: 100; }
-        .account-dropdown.visible { display: block; }
-        .dropdown-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 0.85rem; transition: background 0.15s; cursor: pointer; }
-        .dropdown-item:hover { background: var(--input); }
-        .dropdown-item i { width: 18px; color: var(--valeo-lime); font-size: 0.9rem; }
-        .dropdown-divider { height: 1px; background: var(--border); margin: 0.35rem 0; }
-        .dropdown-userinfo { padding: 0.6rem 0.75rem; }
-        .dropdown-userinfo .name { font-weight: 600; font-size: 0.9rem; }
-        .dropdown-userinfo .role { color: var(--muted); font-size: 0.75rem; }
-        .header-user { position: relative; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+            background: var(--input);
+        }
+
+        .nav-link.active {
+            background: var(--valeo-lime);
+            color: var(--background);
+            font-weight: 700;
+        }
+
+        .header-user {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .account-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+        }
+
+        .account-btn:hover {
+            color: var(--valeo-lime);
+            border-color: var(--valeo-lime);
+        }
+
+        .account-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+
+            width: 220px;
+            padding: 0.5rem;
+
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+
+            display: none;
+            z-index: 200;
+        }
+
+        .account-dropdown.visible {
+            display: block;
+        }
+
+        .dropdown-userinfo {
+            padding: 0.6rem 0.75rem;
+        }
+
+        .dropdown-userinfo .name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .dropdown-userinfo .role,
+        .dropdown-userinfo .email {
+            color: var(--muted);
+            font-size: 0.72rem;
+            margin-top: 3px;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0.35rem 0;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.85rem;
+
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: var(--input);
+        }
+
+        .dropdown-item i {
+            width: 18px;
+            color: var(--valeo-lime);
+        }
 
         .main-content {
-            position: relative; z-index: 1;
-            flex: 1; padding: 1.5rem 2rem;
-            max-width: 1700px; margin: 0 auto; width: 100%;
-            display: flex; flex-direction: column; gap: 1.5rem;
+            position: relative;
+            z-index: 1;
+
+            width: 100%;
+            max-width: 1700px;
+
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+
+            flex: 1;
         }
 
         .page-header {
-            display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-        .page-header h2 { font-size: 1.5rem; font-weight: 700; }
-        .page-header h2 i { color: var(--valeo-lime); }
-        .page-header p { color: var(--muted); font-size: 0.875rem; margin-top: 0.25rem; }
-        .page-header .header-actions { margin-left: auto; display: flex; gap: 0.75rem; align-items: center; }
+
+        .page-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .page-header h2 i {
+            color: var(--valeo-lime);
+        }
+
+        .page-header p {
+            margin-top: 0.25rem;
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+        }
 
         .panel {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 14px; display: flex; flex-direction: column; overflow: hidden;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
         }
-        .panel-header {
-            padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap;
-        }
-        .panel-title { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
-        .panel-body { padding: 1.25rem; overflow-x: auto; }
 
-        .badge {
-            display: inline-flex; align-items: center; padding: 0.2rem 0.5rem;
-            border-radius: 6px; font-size: 0.7rem; font-weight: 600; line-height: 1.4;
+        .panel-header {
+            min-height: 58px;
+            padding: 0.85rem 1.25rem;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+
+            border-bottom: 1px solid var(--border);
         }
-        .badge-lime { background: rgba(185, 255, 0, 0.12); color: var(--valeo-lime); border: 1px solid rgba(185, 255, 0, 0.25); }
-        .badge-green { background: rgba(0, 204, 102, 0.12); color: var(--accent-green); border: 1px solid rgba(0, 204, 102, 0.25); }
-        .badge-amber { background: rgba(219, 185, 92, 0.12); color: var(--accent-amber); border: 1px solid rgba(219, 185, 92, 0.25); }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .panel-title i {
+            color: var(--valeo-lime);
+        }
+
+        .panel-body {
+            padding: 1rem 1.25rem;
+        }
+
+        /* FILTRES */
+
+        .filters-panel {
+            width: 100%;
+        }
+
+        .filters-body {
+            padding: 1rem 1.25rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns:
+                minmax(180px, 1.4fr)
+                minmax(190px, 1.3fr)
+                minmax(130px, 0.9fr)
+                minmax(150px, 1fr)
+                auto;
+
+            gap: 0.75rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            min-width: 0;
+        }
+
+        .filter-label {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+
+            margin-bottom: 0.35rem;
+
+            color: var(--muted);
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .filter-label i {
+            color: var(--valeo-lime);
+        }
+
+        .filter-input,
+        .filter-select {
+            width: 100%;
+            height: 38px;
+
+            padding: 0.45rem 0.7rem;
+
+            background: var(--input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+
+            outline: none;
+        }
+
+        .filter-input:focus,
+        .filter-select:focus {
+            border-color: var(--valeo-lime);
+            box-shadow: 0 0 0 2px rgba(185,255,0,0.08);
+        }
+
+        .filter-select {
+            appearance: auto;
+            color-scheme: dark;
+            cursor: pointer;
+        }
+
+        .filter-select option {
+            background: #181C1E;
+            color: #FFFFFF;
+        }
+
+        .filter-select optgroup {
+            background: #101314;
+            color: var(--valeo-lime);
+            font-weight: 700;
+        }
+
+        .filter-select option:checked {
+            background: var(--valeo-lime);
+            color: #080A0B;
+        }
+
+        .reset-btn {
+            height: 38px;
+            padding: 0 0.85rem;
+
+            border-radius: 8px;
+            border: 1px solid rgba(255,68,68,0.25);
+
+            background: rgba(255,68,68,0.08);
+            color: var(--red);
+
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255,68,68,0.16);
+        }
+
+        /* KPI */
 
         .kpi-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
         }
 
         .kpi-card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 14px; padding: 1.25rem 1.5rem;
-            display: flex; flex-direction: column; justify-content: space-between;
-            transition: all 0.3s ease;
-        }
-        .kpi-card:hover { border-color: rgba(185, 255, 0, 0.15); transform: translateY(-2px); }
-        .kpi-card .kpi-label { color: var(--muted); font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
-        .kpi-card .kpi-value { font-size: 1.8rem; font-weight: 700; color: var(--valeo-lime); line-height: 1.1; }
-        .kpi-card .kpi-desc { font-size: 0.7rem; color: var(--muted); margin-top: 0.5rem; }
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
 
-        /* Filters */
-        .filters-grid {
-            display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1.5fr;
-            gap: 1.25rem; align-items: end;
-        }
-        .filter-group { display: flex; flex-direction: column; gap: 0.4rem; }
-        .filter-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; display: flex; align-items: center; gap: 0.3rem; }
-        .filter-select, .filter-input {
-            background: var(--input); border: 1px solid var(--border);
-            border-radius: 8px; color: var(--text); font-family: 'Inter', sans-serif;
-            font-size: 0.85rem; padding: 0.5rem 0.75rem; outline: none;
-            transition: border 0.2s; width: 100%;
-        }
-        .filter-select:focus, .filter-input:focus { border-color: var(--valeo-lime); }
-
-        .period-btns { display: flex; gap: 0.3rem; flex-wrap: wrap; }
-        .period-btn {
-            padding: 0.35rem 0.7rem; border-radius: 6px;
-            border: 1px solid var(--border); background: var(--input);
-            color: var(--muted); font-size: 0.75rem; font-family: 'Inter', sans-serif;
-            font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap;
-        }
-        .period-btn:hover { border-color: var(--valeo-lime); color: var(--valeo-lime); }
-        .period-btn.active { background: var(--valeo-lime); border-color: var(--valeo-lime); color: var(--background); }
-
-        .ctrl-btn {
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            padding: 0.4rem 0.875rem; border-radius: 7px;
-            border: 1px solid transparent; cursor: pointer;
-            font-size: 0.8rem; font-family: 'Inter', sans-serif;
-            font-weight: 600; transition: all 0.2s;
-        }
-        .ctrl-btn-green { background: rgba(0, 204, 102, 0.12); color: var(--accent-green); border-color: rgba(0, 204, 102, 0.25); }
-        .ctrl-btn-green:hover { background: rgba(0, 204, 102, 0.22); }
-        .ctrl-btn-red { background: rgba(255, 68, 68, 0.1); color: var(--accent-red); border-color: rgba(255, 68, 68, 0.2); }
-        .ctrl-btn-red:hover { background: rgba(255, 68, 68, 0.2); }
-        .ctrl-btn-lime { background: rgba(185, 255, 0, 0.1); color: var(--valeo-lime); border-color: rgba(185, 255, 0, 0.2); }
-        .ctrl-btn-lime:hover { background: rgba(185, 255, 0, 0.2); }
-
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 700px; }
-        th { padding: 0.75rem 1rem; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); border-bottom: 2px solid var(--border); font-weight: 600; white-space: nowrap; background: var(--background); position: sticky; top: 0; }
-        td { padding: 0.7rem 1rem; font-size: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.04); color: var(--text); vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(185, 255, 0, 0.03); }
-
-        .progress-bar-container {
-            width: 80px; height: 6px; background: var(--input);
-            border-radius: 9999px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 0.4rem;
-        }
-        .progress-bar-fill { height: 100%; border-radius: 9999px; transition: width 0.4s; }
-        .progress-bar-fill.green { background: var(--accent-green); }
-        .progress-bar-fill.amber { background: var(--accent-amber); }
-        .progress-bar-fill.lime { background: var(--valeo-lime); }
-
-        .trp-badge {
-            display: inline-flex; align-items: center; padding: 0.2rem 0.6rem;
-            border-radius: 20px; font-size: 0.75rem; font-weight: 700;
-            background: linear-gradient(135deg, rgba(185, 255, 0, 0.12), rgba(31, 64, 78, 0.3));
-            color: var(--valeo-lime); border: 1px solid rgba(185, 255, 0, 0.25);
-            font-family: monospace; letter-spacing: 0.03em;
+            padding: 1rem 1.25rem;
         }
 
-        .pagination-bar {
-            display: flex; align-items: center; justify-content: center;
-            gap: 1rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+        .kpi-label {
+            color: var(--muted);
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 600;
         }
+
+        .kpi-value {
+            margin-top: 0.35rem;
+            color: var(--valeo-lime);
+            font-size: 1.65rem;
+            font-weight: 700;
+        }
+
+        .kpi-desc {
+            margin-top: 0.25rem;
+            color: var(--muted);
+            font-size: 0.68rem;
+        }
+
+        /* GRAPHIQUE */
+
+        .chart-panel {
+            max-width: 100%;
+        }
+
+        .chart-container {
+            height: 260px;
+            position: relative;
+        }
+
+        #histChart {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* TABLE */
+
+        .table-panel {
+            min-height: 480px;
+        }
+
+        .table-tools {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sort-select {
+            width: auto;
+            min-width: 130px;
+            height: 32px;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 900px;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 0.75rem 1rem;
+
+            background: var(--background);
+            border-bottom: 2px solid var(--border);
+
+            color: var(--muted);
+            font-size: 0.66rem;
+            font-weight: 600;
+
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+
+            color: var(--text);
+            font-size: 0.82rem;
+
+            vertical-align: middle;
+        }
+
+        tbody tr:hover td {
+            background: rgba(185,255,0,0.025);
+        }
+
+        .product-badge {
+            display: inline-flex;
+            align-items: center;
+
+            max-width: 210px;
+
+            padding: 0.25rem 0.55rem;
+
+            border-radius: 6px;
+
+            background: rgba(185,255,0,0.10);
+            border: 1px solid rgba(185,255,0,0.20);
+
+            color: var(--valeo-lime);
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .family-badge {
+            display: inline-flex;
+            align-items: center;
+
+            padding: 0.25rem 0.55rem;
+
+            border-radius: 6px;
+
+            background: rgba(31,64,78,0.35);
+            border: 1px solid rgba(31,64,78,0.5);
+
+            color: #d5dde0;
+
+            white-space: nowrap;
+        }
+
+        .value-positive {
+            color: var(--valeo-lime);
+            font-weight: 700;
+        }
+
+        .rendement {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .progress {
+            width: 65px;
+            height: 5px;
+
+            background: var(--input);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--valeo-lime);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 1rem !important;
+            color: var(--muted);
+        }
+
+        .empty-state i {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-size: 2rem;
+            opacity: 0.5;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+
+            padding: 0.9rem 1rem;
+
+            border-top: 1px solid var(--border);
+        }
+
         .page-btn {
-            display: inline-flex; align-items: center; gap: 0.35rem;
-            padding: 0.4rem 0.875rem; background: var(--input);
-            border: 1px solid var(--border); border-radius: 7px;
-            color: var(--text); font-size: 0.825rem; font-family: 'Inter', sans-serif;
-            cursor: pointer; transition: all 0.2s;
-        }
-        .page-btn:hover:not(:disabled) { background: var(--valeo-lime); color: var(--background); border-color: var(--valeo-lime); }
-        .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+            height: 34px;
+            padding: 0 0.75rem;
 
-        #histChart { min-height: 240px; }
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+
+            background: var(--input);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+
+            cursor: pointer;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: var(--valeo-lime);
+            border-color: var(--valeo-lime);
+            color: var(--background);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        .export-btn {
+            height: 34px;
+            padding: 0 0.8rem;
+
+            border: 1px solid rgba(0,204,102,0.25);
+            border-radius: 7px;
+
+            background: rgba(0,204,102,0.08);
+            color: var(--green);
+
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+
+            cursor: pointer;
+        }
+
+        .export-btn:hover {
+            background: rgba(0,204,102,0.16);
+        }
+
+        .count-badge {
+            display: inline-flex;
+            align-items: center;
+
+            padding: 0.25rem 0.55rem;
+
+            border-radius: 6px;
+
+            background: rgba(185,255,0,0.10);
+            border: 1px solid rgba(185,255,0,0.20);
+
+            color: var(--valeo-lime);
+
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
 
         .app-footer {
             position: relative;
             z-index: 1;
+
             background: var(--card);
             border-top: 1px solid var(--border);
-            padding: 0.75rem 2rem;
+
+            padding: 0.7rem 2rem;
+
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.75rem;
+
             color: var(--muted);
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: auto;
+            font-size: 0.7rem;
         }
 
         .app-footer a {
             color: var(--valeo-lime);
             text-decoration: none;
         }
-        .app-footer a:hover {
-            text-decoration: underline;
-        }
 
         @media (max-width: 1200px) {
-            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-            .filters-grid { grid-template-columns: 1fr 1fr; }
+            .filters-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .reset-wrapper {
+                grid-column: span 2;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
+
         @media (max-width: 768px) {
-            .kpi-grid { grid-template-columns: 1fr; }
-            .filters-grid { grid-template-columns: 1fr; }
-            header { flex-direction: column; padding: 0.875rem 1rem; }
-            .main-content { padding: 1rem; }
+            header {
+                padding: 0.8rem 1rem;
+                flex-direction: column;
+            }
+
+            .header-nav {
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .reset-wrapper {
+                grid-column: auto;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                margin-left: 0;
+            }
+
+            .app-footer {
+                padding: 0.7rem 1rem;
+                flex-direction: column;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div class="background"></div>
-    <div class="grid"></div>
-    <div class="glow"></div>
 
-    <header>
-        <div class="header-title">
-            <img src="images%20(1).png" alt="Valeo">
-            <h1>VALEO</h1>
-        </div>
-        <nav class="header-nav" id="mainNav">
-            <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
-            <a href="historique.html" class="nav-link active"><i class="fa-solid fa-clock-rotate-left"></i> Historique</a>
-            <a href="live.html" class="nav-link"><i class="fa-solid fa-video"></i> Session Live</a>
-            <a href="admin.html" class="nav-link" id="navAdmin" style="display:none;"><i class="fa-solid fa-shield-halved"></i> Admin</a>
-        </nav>
-        <div class="header-user">
-            <span style="color: var(--muted); font-size: 0.85rem; display:flex; align-items:center; gap:0.5rem; flex-shrink:0;">
-                <i class="fa-regular fa-calendar"></i> <span id="current-date">--</span>
-                <span style="opacity:0.3;">|</span>
-                <i class="fa-regular fa-clock"></i> <span id="current-time">--:--:--</span>
-            </span>
-            <span class="user-email" id="userDisplay" style="font-size:0.85rem;"></span>
-            <button class="account-btn" id="accountBtn" title="Mon compte"><i class="fa-regular fa-circle-user"></i></button>
-            <div class="account-dropdown" id="accountDropdown">
-                <div class="dropdown-userinfo">
-                    <div class="name" id="dropdownName">Utilisateur</div>
-                    <div class="role" id="dropdownRole">Rôle</div>
-                    <div class="role" id="dropdownEmail" style="color:var(--muted);font-size:0.7rem;margin-top:2px;">email</div>
-                </div>
-                <div class="dropdown-divider"></div>
-                <a href="settings.html" class="dropdown-item"><i class="fa-solid fa-gear"></i> Paramètres</a>
-                <div class="dropdown-divider"></div>
-                <div class="dropdown-item" onclick="logout()" style="color:var(--accent-red, #ff4444);"><i class="fa-solid fa-arrow-right-from-bracket" style="color:var(--accent-red, #ff4444);"></i> Déconnexion</div>
-            </div>
-        </div>
-    </header>
+<div class="background"></div>
+<div class="grid"></div>
 
-    <div class="main-content">
-        <div class="page-header">
-            <div>
-                <h2><i class="fa-solid fa-clock-rotate-left"></i> Historique Total des Mesures</h2>
-                <p>Toutes les lectures enregistrées avec filtres avancés</p>
-            </div>
-            <div class="header-actions">
-                <span class="badge badge-lime" id="total-count-badge">0 enregistrements</span>
-                <button class="ctrl-btn ctrl-btn-green" onclick="exportCSV()" id="btn-export">
-                    <i class="fa-solid fa-file-csv"></i> Exporter CSV
-                </button>
-            </div>
-        </div>
+<header>
 
-        <!-- FILTERS -->
-        <div class="panel">
-            <div class="panel-header">
-                <div class="panel-title"><i class="fa-solid fa-filter"></i> Filtres</div>
-                <button class="ctrl-btn ctrl-btn-red" onclick="resetFilters()">
-                    <i class="fa-solid fa-rotate-left"></i> Réinitialiser
-                </button>
-            </div>
-            <div class="panel-body">
-                <div class="filters-grid">
-                    <div class="filter-group">
-                        <label class="filter-label"><i class="fa-solid fa-calendar-days"></i> Période</label>
-                        <div class="period-btns">
-                            <button class="period-btn" id="period-today" onclick="setPeriod('today')">Aujourd'hui</button>
-                            <button class="period-btn" id="period-week" onclick="setPeriod('week')">7 jours</button>
-                            <button class="period-btn" id="period-month" onclick="setPeriod('month')">Ce mois</button>
-                            <button class="period-btn" id="period-all" onclick="setPeriod('all')">Tout</button>
-                        </div>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label" for="filter-product"><i class="fa-solid fa-tag"></i> Produit</label>
-                        <select class="filter-select" id="filter-product" onchange="applyFilters()">
-                            <option value="">Tous les produits</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label" for="filter-date-from"><i class="fa-solid fa-calendar-plus"></i> Date début</label>
-                        <input type="date" class="filter-input" id="filter-date-from" onchange="applyFilters()">
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label" for="filter-date-to"><i class="fa-solid fa-calendar-minus"></i> Date fin</label>
-                        <input type="date" class="filter-input" id="filter-date-to" onchange="applyFilters()">
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label" for="filter-search"><i class="fa-solid fa-magnifying-glass"></i> Recherche</label>
-                        <input type="text" class="filter-input" id="filter-search" placeholder="ID, produit, date..." oninput="applyClientFilters()">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SUMMARY -->
-        <div class="kpi-grid" id="summary-grid">
-            <div class="kpi-card">
-                <div>
-                    <div class="kpi-label">Total Enregistrements</div>
-                    <div class="kpi-value" id="hist-total-records">0</div>
-                </div>
-                <div class="kpi-desc"><i class="fa-solid fa-database"></i> Lignes filtrées</div>
-            </div>
-            <div class="kpi-card">
-                <div>
-                    <div class="kpi-label">Total Pièces</div>
-                    <div class="kpi-value" id="hist-total-parts">0</div>
-                </div>
-                <div class="kpi-desc"><i class="fa-solid fa-cubes"></i> Somme quantités</div>
-            </div>
-            <div class="kpi-card">
-                <div>
-                    <div class="kpi-label">TRP Moyen</div>
-                    <div class="kpi-value" id="hist-avg-trp">0%</div>
-                </div>
-                <div class="kpi-desc"><i class="fa-solid fa-chart-pie"></i> Taux moyen global</div>
-            </div>
-            <div class="kpi-card">
-                <div>
-                    <div class="kpi-label">Produits Distincts</div>
-                    <div class="kpi-value" id="hist-distinct-products">0</div>
-                </div>
-                <div class="kpi-desc"><i class="fa-solid fa-tags"></i> Types différents</div>
-            </div>
-        </div>
-
-        <!-- CHART -->
-        <div class="panel">
-            <div class="panel-header">
-                <div class="panel-title"><i class="fa-solid fa-chart-bar"></i> Volume par Produit</div>
-            </div>
-            <div class="panel-body">
-                <canvas id="histChart"></canvas>
-            </div>
-        </div>
-
-        <!-- TABLE -->
-        <div class="panel">
-            <div class="panel-header">
-                <div class="panel-title"><i class="fa-solid fa-table"></i> Toutes les Mesures</div>
-                <div style="display:flex; gap:0.5rem; align-items:center;">
-                    <span style="color:var(--muted); font-size:0.8rem;">Trier :</span>
-                    <select class="filter-select" id="sort-by" onchange="applyClientFilters()" style="padding:0.25rem 0.5rem; font-size:0.8rem; width:auto;">
-                        <option value="date-desc">Date ↓</option>
-                        <option value="date-asc">Date ↑</option>
-                        <option value="qty-desc">Quantité ↓</option>
-                        <option value="qty-asc">Quantité ↑</option>
-                        <option value="rate-desc">TRP ↓</option>
-                        <option value="rate-asc">TRP ↑</option>
-                        <option value="product-asc">Produit A-Z</option>
-                    </select>
-                </div>
-            </div>
-            <div class="panel-body" style="padding:0; overflow-x:auto;">
-                <table id="hist-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>ID</th>
-                            <th>Date &amp; Heure</th>
-                            <th>Produit</th>
-                            <th>Quantité</th>
-                            <th>Total</th>
-                            <th>Remplissage</th>
-                            <th>TRP</th>
-                        </tr>
-                    </thead>
-                    <tbody id="hist-table-body">
-                        <tr><td colspan="8" style="text-align:center; padding:3rem; color:var(--muted);"><i class="fa-solid fa-spinner fa-spin"></i> Chargement...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="pagination-bar">
-                <button class="page-btn" id="btn-prev" onclick="changePage(-1)"><i class="fa-solid fa-chevron-left"></i> Préc.</button>
-                <span id="page-info" style="color:var(--muted); font-size:0.875rem;">Page 1</span>
-                <button class="page-btn" id="btn-next" onclick="changePage(1)">Suiv. <i class="fa-solid fa-chevron-right"></i></button>
-            </div>
-        </div>
+    <div class="header-title">
+        <img src="images%20(1).png" alt="Valeo">
+        <h1>VALEO</h1>
     </div>
 
-    <footer class="app-footer">
-        <span>&copy; 2025 Valeo — Tous droits réservés</span>
-        <span>Version 1.0.0 | <a href="#">Support</a></span>
-    </footer>
+    <nav class="header-nav">
 
-    <script>
-        const PRODUCTS = ['SWS', 'LJC', 'SWEET 400', '7B/9B/XDD', '8B', 'HAZARD', 'Cap capacitive', 'E-Toggle', 'TCP', 'FRAME', 'MATE', 'HMI', 'ADAS', 'Toggle', 'SWITCH', 'HORN', 'SENSOR'];
-        const PAGE_SIZE = 25;
-        let allData = [];
-        let displayData = [];
-        let currentPage = 1;
-        let histChart = null;
-        let trpByProduct = {};
-        let scanCounter = 0;
+        <a href="dashboard.html" class="nav-link">
+            <i class="fa-solid fa-gauge-high"></i>
+            Dashboard
+        </a>
+
+        <a href="historique.html" class="nav-link active">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            Historique
+        </a>
+
+        <a href="live.html" class="nav-link">
+            <i class="fa-solid fa-video"></i>
+            Session Live
+        </a>
+
+        <a href="admin.html"
+           class="nav-link"
+           id="navAdmin"
+           style="display:none;">
+            <i class="fa-solid fa-shield-halved"></i>
+            Admin
+        </a>
+
+    </nav>
+
+    <div class="header-user">
+
+        <span style="color:var(--muted);font-size:0.78rem;">
+            <i class="fa-regular fa-calendar"></i>
+            <span id="current-date">--</span>
+            <span style="opacity:0.3;"> | </span>
+            <i class="fa-regular fa-clock"></i>
+            <span id="current-time">--:--:--</span>
+        </span>
+
+        <span id="userDisplay" style="font-size:0.8rem;"></span>
+
+        <button class="account-btn" id="accountBtn">
+            <i class="fa-regular fa-circle-user"></i>
+        </button>
+
+        <div class="account-dropdown" id="accountDropdown">
+
+            <div class="dropdown-userinfo">
+                <div class="name" id="dropdownName">Utilisateur</div>
+                <div class="role" id="dropdownRole">Rôle</div>
+                <div class="email" id="dropdownEmail">Email</div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <a href="settings.html" class="dropdown-item">
+                <i class="fa-solid fa-gear"></i>
+                Paramètres
+            </a>
+
+            <div class="dropdown-divider"></div>
+
+            <div class="dropdown-item"
+                 onclick="logout()"
+                 style="color:var(--red);">
+                <i class="fa-solid fa-arrow-right-from-bracket"
+                   style="color:var(--red);"></i>
+                Déconnexion
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="main-content">
+
+    <div class="page-header">
+
+        <div>
+            <h2>
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                Historique Total des Mesures
+            </h2>
+
+            <p>
+                Historique des mesures enregistrées
+            </p>
+        </div>
+
+        <div class="header-actions">
+
+            <span class="count-badge" id="total-count-badge">
+                0 enregistrement
+            </span>
+
+            <button class="export-btn" onclick="exportCSV()">
+                <i class="fa-solid fa-file-csv"></i>
+                Exporter CSV
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- FILTRES -->
+
+    <section class="panel filters-panel">
+
+        <div class="panel-header">
+            <div class="panel-title">
+                <i class="fa-solid fa-filter"></i>
+                Filtres
+            </div>
+        </div>
+
+        <div class="filters-body">
+
+            <div class="filters-grid">
+
+                <div class="filter-group">
+
+                    <label class="filter-label">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        Recherche
+                    </label>
+
+                    <input
+                        type="text"
+                        id="filter-search"
+                        class="filter-input"
+                        placeholder="Produit, famille..."
+                    >
+
+                </div>
+
+
+                <div class="filter-group">
+
+                    <label class="filter-label">
+                        <i class="fa-solid fa-tag"></i>
+                        Produit
+                    </label>
+
+                    <select
+                        id="filter-product"
+                        class="filter-select"
+                    >
+                        <option value="">
+                            Tous les produits
+                        </option>
+                    </select>
+
+                </div>
+
+
+                <div class="filter-group">
+
+                    <label class="filter-label">
+                        <i class="fa-solid fa-calendar"></i>
+                        Période
+                    </label>
+
+                    <select
+                        id="filter-period"
+                        class="filter-select"
+                    >
+                        <option value="all">Toutes</option>
+                        <option value="today">Aujourd'hui</option>
+                        <option value="week">7 jours</option>
+                        <option value="month">Ce mois</option>
+                    </select>
+
+                </div>
+
+
+                <div class="filter-group">
+
+                    <label class="filter-label">
+                        <i class="fa-regular fa-calendar-days"></i>
+                        Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="filter-date"
+                        class="filter-input"
+                    >
+
+                </div>
+
+
+                <div class="filter-group reset-wrapper">
+
+                    <button
+                        class="reset-btn"
+                        onclick="resetFilters()"
+                    >
+                        <i class="fa-solid fa-rotate-left"></i>
+                        Réinitialiser
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- KPI -->
+
+    <section class="kpi-grid">
+
+        <div class="kpi-card">
+
+            <div class="kpi-label">
+                Mesures enregistrées
+            </div>
+
+            <div class="kpi-value" id="hist-total-records">
+                0
+            </div>
+
+            <div class="kpi-desc">
+                Nombre de passages enregistrés
+            </div>
+
+        </div>
+
+
+        <div class="kpi-card">
+
+            <div class="kpi-label">
+                Nombre de produits
+            </div>
+
+            <div class="kpi-value" id="hist-total-products">
+                0
+            </div>
+
+            <div class="kpi-desc">
+                Quantité totale calculée
+            </div>
+
+        </div>
+
+
+        <div class="kpi-card">
+
+            <div class="kpi-label">
+                Chargement total
+            </div>
+
+            <div class="kpi-value" id="hist-total-loading">
+                0
+            </div>
+
+            <div class="kpi-desc">
+                Chargement cumulé
+            </div>
+
+        </div>
+
+
+        <div class="kpi-card">
+
+            <div class="kpi-label">
+                Produits distincts
+            </div>
+
+            <div class="kpi-value" id="hist-distinct-products">
+                0
+            </div>
+
+            <div class="kpi-desc">
+                Types de produits
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- GRAPHIQUE -->
+
+    <section class="panel chart-panel">
+
+        <div class="panel-header">
+
+            <div class="panel-title">
+                <i class="fa-solid fa-chart-column"></i>
+                Quantité par produit
+            </div>
+
+        </div>
+
+        <div class="panel-body">
+
+            <div class="chart-container">
+                <canvas id="histChart"></canvas>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- TABLE -->
+
+    <section class="panel table-panel">
+
+        <div class="panel-header">
+
+            <div class="panel-title">
+                <i class="fa-solid fa-table"></i>
+                Historique des mesures
+            </div>
+
+            <div class="table-tools">
+
+                <select
+                    id="sort-by"
+                    class="filter-select sort-select"
+                >
+                    <option value="date-desc">
+                        Date ↓
+                    </option>
+
+                    <option value="date-asc">
+                        Date ↑
+                    </option>
+
+                    <option value="qty-desc">
+                        Nombre ↓
+                    </option>
+
+                    <option value="qty-asc">
+                        Nombre ↑
+                    </option>
+
+                    <option value="product-asc">
+                        Produit A-Z
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>#</th>
+                        <th>Date & Heure</th>
+                        <th>Nom du produit</th>
+                        <th>Nom de famille</th>
+                        <th>Rendement</th>
+                        <th>Chargement total</th>
+                        <th>Nombre de produits</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="hist-table-body">
+
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="fa-solid fa-database"></i>
+                            Aucune mesure enregistrée
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <div class="pagination">
+
+            <button
+                class="page-btn"
+                id="btn-prev"
+                onclick="changePage(-1)"
+            >
+                <i class="fa-solid fa-chevron-left"></i>
+                Préc.
+            </button>
+
+            <span
+                class="page-info"
+                id="page-info"
+            >
+                Page 1 / 1
+            </span>
+
+            <button
+                class="page-btn"
+                id="btn-next"
+                onclick="changePage(1)"
+            >
+                Suiv.
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer class="app-footer">
+
+    <span>
+        &copy; 2025 Valeo — Tous droits réservés
+    </span>
+
+    <span>
+        Version 1.0.0 |
+        <a href="#">Support</a>
+    </span>
+
+</footer>
+
+
+<script>
+
+const PRODUCT_FAMILIES = {
+
+    "SWEET 400": [
+        "SWEET 400"
+    ],
+
+    "X52 PUSH BAR": [
+        "9B",
+        "XDD/7B",
+        "8B"
+    ],
+
+    "BEL": [
+        "FRAME",
+        "MATE"
+    ],
+
+    "CMFB-P": [
+        "CMFB PUSH",
+        "DECOPART"
+    ],
+
+    "OV512": [
+        "D2CORATIVE FASCIA",
+        "ADAS",
+        "CAPACITIVE PLATE",
+        "TOGGLE",
+        "BEZEL",
+        "CAPACITIVE DUMMY",
+        "ON/OFF"
+    ],
+
+    "P674": [
+        "HAZARD = Warning",
+        "DECOR CAPA PUSH BLOCK",
+        "CAP CAPACITIVE",
+        "TCP",
+        "DECOR FASCIA MAIN LHD"
+    ],
+
+    "E-TOGGLE": [
+        "E-TOGGLE"
+    ],
+
+    "LJC": [
+        "LJC"
+    ],
+
+    "X52 SQUARE": [
+        "X52 SQUARE"
+    ],
+
+    "MFL": [
+        "MFL"
+    ],
+
+    "HMI": [
+        "HMI"
+    ]
+
+};
+
+
+const PAGE_SIZE = 25;
+
+let allData = [];
+let displayData = [];
+
+let currentPage = 1;
+let histChart = null;
+
+
+/* HORLOGE */
 
 function updateClock() {
-            const now = new Date();
-            document.getElementById('current-date').textContent = now.toLocaleDateString('fr-FR');
-            document.getElementById('current-time').textContent = now.toLocaleTimeString('fr-FR');
+
+    const now = new Date();
+
+    document.getElementById('current-date').textContent =
+        now.toLocaleDateString('fr-FR');
+
+    document.getElementById('current-time').textContent =
+        now.toLocaleTimeString('fr-FR');
+
+}
+
+setInterval(updateClock, 1000);
+
+
+/* UTILISATEUR */
+
+function loadUserInfo() {
+
+    const isAdmin =
+        sessionStorage.getItem('valeo_isAdmin') === 'true';
+
+    if (isAdmin) {
+        document.getElementById('navAdmin').style.display =
+            'inline-flex';
+    }
+
+    const userName =
+        sessionStorage.getItem('valeo_userName') ||
+        'Utilisateur';
+
+    const userCode =
+        sessionStorage.getItem('valeo_userCode') ||
+        '';
+
+    const userEmail =
+        sessionStorage.getItem('valeo_userEmail') ||
+        '';
+
+    const userRole =
+        sessionStorage.getItem('valeo_userRole') ||
+        '';
+
+    document.getElementById('userDisplay').textContent =
+        userCode || userName;
+
+    document.getElementById('dropdownName').textContent =
+        userName;
+
+    document.getElementById('dropdownRole').textContent =
+        userRole || '—';
+
+    document.getElementById('dropdownEmail').textContent =
+        userEmail || '—';
+
+}
+
+
+/* MENU COMPTE */
+
+function setupAccountMenu() {
+
+    const btn =
+        document.getElementById('accountBtn');
+
+    const dropdown =
+        document.getElementById('accountDropdown');
+
+    btn.addEventListener('click', function(event) {
+
+        event.stopPropagation();
+
+        dropdown.classList.toggle('visible');
+
+    });
+
+    document.addEventListener('click', function() {
+
+        dropdown.classList.remove('visible');
+
+    });
+
+    dropdown.addEventListener('click', function(event) {
+
+        event.stopPropagation();
+
+    });
+
+}
+
+
+/* LOGOUT */
+
+function logout() {
+
+    sessionStorage.removeItem('valeo_userName');
+    sessionStorage.removeItem('valeo_userEmail');
+    sessionStorage.removeItem('valeo_userRole');
+    sessionStorage.removeItem('valeo_userId');
+    sessionStorage.removeItem('valeo_isAdmin');
+
+    window.location.href = 'loading.html';
+
+}
+
+
+/* FILTRE PRODUIT */
+
+function populateProductDropdown() {
+
+    const select =
+        document.getElementById('filter-product');
+
+    select.innerHTML =
+        '<option value="">Tous les produits</option>';
+
+    Object.entries(PRODUCT_FAMILIES).forEach(
+        ([family, products]) => {
+
+            const group =
+                document.createElement('optgroup');
+
+            group.label = family;
+
+            products.forEach(product => {
+
+                const option =
+                    document.createElement('option');
+
+                option.value = product;
+                option.textContent = product;
+
+                group.appendChild(option);
+
+            });
+
+            select.appendChild(group);
+
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+    );
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Afficher le lien Admin si l'utilisateur est admin
-            const isAdmin = sessionStorage.getItem('valeo_isAdmin') === 'true';
-            const navAdmin = document.getElementById('navAdmin');
-            if (navAdmin && isAdmin) {
-                navAdmin.style.display = 'inline-flex';
+}
+
+
+/* NOM FAMILLE */
+
+function getFamily(product) {
+
+    for (const [family, products]
+        of Object.entries(PRODUCT_FAMILIES)) {
+
+        if (products.includes(product)) {
+            return family;
+        }
+
+    }
+
+    return '';
+
+}
+
+
+/* NORMALISATION DES DONNEES */
+
+function normalizeRecord(record) {
+
+    if (!record || typeof record !== 'object') {
+        return null;
+    }
+
+    const product =
+        record.produit ??
+        record.product ??
+        record.productName ??
+        record.nomProduit ??
+        record.nom_produit ??
+        '';
+
+    if (!product) {
+        return null;
+    }
+
+    const family =
+        record.famille ??
+        record.family ??
+        record.familyName ??
+        record.nomFamille ??
+        record.nom_famille ??
+        getFamily(product);
+
+    const date =
+        record.date ??
+        record.timestamp ??
+        record.datetime ??
+        record.dateHeure ??
+        record.date_heure ??
+        '';
+
+    const quantity =
+        Number(
+            record.quantite ??
+            record.quantity ??
+            record.nombreProduits ??
+            record.nombre_produits ??
+            record.count ??
+            0
+        ) || 0;
+
+    const totalLoading =
+        Number(
+            record.chargement_total ??
+            record.chargementTotal ??
+            record.quantite_totale ??
+            record.total ??
+            record.loading ??
+            0
+        ) || 0;
+
+    let rendement =
+        record.rendement ??
+        record.yield ??
+        record.taux ??
+        record.rate ??
+        0;
+
+    if (typeof rendement === 'string') {
+        rendement =
+            parseFloat(
+                rendement.replace('%', '').replace(',', '.')
+            ) || 0;
+    }
+
+    rendement = Number(rendement) || 0;
+
+    return {
+        id:
+            record.id ??
+            record.scanId ??
+            record.scan_id ??
+            '',
+
+        date: date,
+
+        produit: product,
+
+        famille:
+            family || getFamily(product) || '—',
+
+        rendement: rendement,
+
+        chargementTotal: totalLoading,
+
+        nombreProduits: quantity
+    };
+
+}
+
+
+/* CHARGEMENT DES DONNEES REELLES */
+
+async function loadHistory() {
+
+    let loaded = false;
+
+    /*
+     * Première source :
+     * données éventuellement fournies par le backend.
+     */
+
+    try {
+
+        const response =
+            await fetch('/api/history', {
+                method: 'GET',
+                cache: 'no-store'
+            });
+
+        if (response.ok) {
+
+            const data =
+                await response.json();
+
+            const records =
+                Array.isArray(data)
+                    ? data
+                    : (
+                        Array.isArray(data.history)
+                            ? data.history
+                            : (
+                                Array.isArray(data.data)
+                                    ? data.data
+                                    : []
+                            )
+                    );
+
+            allData =
+                records
+                    .map(normalizeRecord)
+                    .filter(Boolean);
+
+            loaded = true;
+        }
+
+    } catch (error) {
+
+        console.log(
+            'Endpoint historique indisponible.'
+        );
+
+    }
+
+
+    /*
+     * Deuxième source :
+     * historique éventuellement stocké par le dashboard.
+     *
+     * Aucune donnée n'est créée ici.
+     */
+
+    if (!loaded || allData.length === 0) {
+
+        const storageKeys = [
+            'valeo_history',
+            'valeoHistory',
+            'historyData',
+            'dashboardHistory'
+        ];
+
+        for (const key of storageKeys) {
+
+            try {
+
+                const stored =
+                    localStorage.getItem(key);
+
+                if (!stored) {
+                    continue;
+                }
+
+                const parsed =
+                    JSON.parse(stored);
+
+                const records =
+                    Array.isArray(parsed)
+                        ? parsed
+                        : (
+                            Array.isArray(parsed.history)
+                                ? parsed.history
+                                : (
+                                    Array.isArray(parsed.data)
+                                        ? parsed.data
+                                        : []
+                                )
+                        );
+
+                const normalized =
+                    records
+                        .map(normalizeRecord)
+                        .filter(Boolean);
+
+                if (normalized.length > 0) {
+
+                    allData = normalized;
+                    loaded = true;
+
+                    break;
+                }
+
+            } catch (error) {
+
+                console.log(
+                    'Données historiques invalides pour :',
+                    key
+                );
+
             }
 
-            // User info display
-            const userName = sessionStorage.getItem('valeo_userName') || 'Utilisateur';
-            const userCode = sessionStorage.getItem('valeo_userCode') || '';
-            const userEmail = sessionStorage.getItem('valeo_userEmail') || '';
-            const userRole = sessionStorage.getItem('valeo_userRole') || '';
-            document.getElementById('userDisplay').textContent = userCode || userName;
-            document.getElementById('dropdownName').textContent = userName;
-            document.getElementById('dropdownRole').textContent = userRole || '—';
-            document.getElementById('dropdownEmail').textContent = userEmail || '—';
+        }
 
-            // Account dropdown toggle
-            const accountBtn = document.getElementById('accountBtn');
-            const dropdown = document.getElementById('accountDropdown');
-            if (accountBtn) {
-                accountBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    dropdown.classList.toggle('visible');
-                });
-                document.addEventListener('click', function() {
-                    dropdown.classList.remove('visible');
-                });
-                dropdown.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                });
+    }
+
+
+    applyFilters();
+
+}
+
+
+/* DATE */
+
+function parseDate(value) {
+
+    if (!value) {
+        return null;
+    }
+
+    const date =
+        new Date(value);
+
+    if (!isNaN(date.getTime())) {
+        return date;
+    }
+
+    const match =
+        String(value).match(
+            /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/
+        );
+
+    if (match) {
+
+        return new Date(
+            Number(match[3]),
+            Number(match[2]) - 1,
+            Number(match[1]),
+            Number(match[4] || 0),
+            Number(match[5] || 0),
+            Number(match[6] || 0)
+        );
+
+    }
+
+    return null;
+
+}
+
+
+/* FILTRES */
+
+function applyFilters() {
+
+    const product =
+        document.getElementById(
+            'filter-product'
+        ).value;
+
+    const search =
+        document.getElementById(
+            'filter-search'
+        ).value
+        .toLowerCase()
+        .trim();
+
+    const period =
+        document.getElementById(
+            'filter-period'
+        ).value;
+
+    const selectedDate =
+        document.getElementById(
+            'filter-date'
+        ).value;
+
+
+    let filtered =
+        allData.filter(record => {
+
+            if (product &&
+                record.produit !== product) {
+
+                return false;
             }
 
-            populateProductDropdown();
-            generateInitialData();
+
+            if (search) {
+
+                const text =
+                    `${record.id}
+                     ${record.produit}
+                     ${record.famille}
+                     ${record.date}
+                     ${record.rendement}
+                     ${record.chargementTotal}
+                     ${record.nombreProduits}`
+                    .toLowerCase();
+
+                if (!text.includes(search)) {
+                    return false;
+                }
+
+            }
+
+
+            const recordDate =
+                parseDate(record.date);
+
+
+            if (selectedDate && recordDate) {
+
+                const dateOnly =
+                    recordDate.toISOString()
+                    .slice(0, 10);
+
+                if (dateOnly !== selectedDate) {
+                    return false;
+                }
+
+            }
+
+
+            if (period !== 'all' && recordDate) {
+
+                const now =
+                    new Date();
+
+                let start =
+                    new Date(now);
+
+                if (period === 'today') {
+
+                    start.setHours(
+                        0, 0, 0, 0
+                    );
+
+                }
+
+                if (period === 'week') {
+
+                    start.setDate(
+                        now.getDate() - 7
+                    );
+
+                }
+
+                if (period === 'month') {
+
+                    start =
+                        new Date(
+                            now.getFullYear(),
+                            now.getMonth(),
+                            1
+                        );
+
+                }
+
+                if (recordDate < start) {
+                    return false;
+                }
+
+            }
+
+            return true;
+
         });
 
-        function logout() {
-            sessionStorage.removeItem('valeo_userName');
-            sessionStorage.removeItem('valeo_userEmail');
-            sessionStorage.removeItem('valeo_userRole');
-            sessionStorage.removeItem('valeo_userId');
-            sessionStorage.removeItem('valeo_isAdmin');
-            window.location.href = 'loading.html';
+
+    sortData(filtered);
+
+    displayData =
+        filtered;
+
+    currentPage = 1;
+
+    updateSummary(filtered);
+    updateChart(filtered);
+    renderPage();
+
+}
+
+
+/* TRI */
+
+function sortData(data) {
+
+    const sort =
+        document.getElementById(
+            'sort-by'
+        ).value;
+
+    data.sort((a, b) => {
+
+        if (sort === 'product-asc') {
+
+            return a.produit.localeCompare(
+                b.produit
+            );
+
         }
 
-        function populateProductDropdown() {
-            const sel = document.getElementById('filter-product');
-            PRODUCTS.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p; opt.textContent = p; sel.appendChild(opt);
-            });
+        if (sort === 'qty-desc') {
+
+            return b.nombreProduits -
+                   a.nombreProduits;
+
         }
 
-        function generateReading() {
-            const now = new Date();
-            const prod = PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)];
-            const qty = Math.floor(Math.random() * 25) + 5;
-            scanCounter++;
-            const rate = Math.round((qty / 45) * 100);
-            return {
-                id: `VAL-${String(scanCounter).padStart(4, '0')}`,
-                date: now.toLocaleDateString('fr-FR'),
-                heure: now.toLocaleTimeString('fr-FR'),
-                produit: prod,
-                quantite: qty,
-                quantite_totale: Math.floor(Math.random() * 200) + qty,
-                taux: `${rate}%`
-            };
+        if (sort === 'qty-asc') {
+
+            return a.nombreProduits -
+                   b.nombreProduits;
+
         }
 
-        function generateInitialData() {
-            const count = 30 + Math.floor(Math.random() * 20);
-            for (let i = 0; i < count; i++) {
-                allData.push(generateReading());
-            }
-            applyClientFilters();
+        const dateA =
+            parseDate(a.date)?.getTime() || 0;
+
+        const dateB =
+            parseDate(b.date)?.getTime() || 0;
+
+        if (sort === 'date-asc') {
+            return dateA - dateB;
         }
 
-        function computeTRP(data) {
-            const rates = {};
-            data.forEach(r => {
-                const rate = parseFloat(r.taux.replace('%', ''));
-                if (!rates[r.produit]) rates[r.produit] = [];
-                if (!isNaN(rate)) rates[r.produit].push(rate);
-            });
-            const result = {};
-            for (const [prod, vals] of Object.entries(rates)) {
-                result[prod] = vals.length ? parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1)) : 0;
-            }
-            return result;
+        return dateB - dateA;
+
+    });
+
+}
+
+
+/* RESUME */
+
+function updateSummary(data) {
+
+    document.getElementById(
+        'hist-total-records'
+    ).textContent =
+        data.length.toLocaleString('fr-FR');
+
+
+    const totalProducts =
+        data.reduce(
+            (sum, item) =>
+                sum + item.nombreProduits,
+            0
+        );
+
+    document.getElementById(
+        'hist-total-products'
+    ).textContent =
+        totalProducts.toLocaleString('fr-FR');
+
+
+    const totalLoading =
+        data.reduce(
+            (sum, item) =>
+                sum + item.chargementTotal,
+            0
+        );
+
+    document.getElementById(
+        'hist-total-loading'
+    ).textContent =
+        totalLoading.toLocaleString('fr-FR');
+
+
+    const distinctProducts =
+        new Set(
+            data.map(item => item.produit)
+        ).size;
+
+    document.getElementById(
+        'hist-distinct-products'
+    ).textContent =
+        distinctProducts;
+
+
+    document.getElementById(
+        'total-count-badge'
+    ).textContent =
+        `${data.length} enregistrement${data.length !== 1 ? 's' : ''}`;
+
+}
+
+
+/* GRAPHIQUE */
+
+function updateChart(data) {
+
+    const quantities = {};
+
+    data.forEach(record => {
+
+        if (!quantities[record.produit]) {
+            quantities[record.produit] = 0;
         }
 
-        function parseDMY(dateStr) {
-            if (!dateStr) return null;
-            const parts = dateStr.split('/');
-            if (parts.length !== 3) return null;
-            return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-        }
+        quantities[record.produit] +=
+            record.nombreProduits;
 
-        function setPeriod(period) {
-            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`period-${period}`).classList.add('active');
-            const today = new Date();
-            const fmt = d => d.toISOString().split('T')[0];
-            document.getElementById('filter-date-from').value = '';
-            document.getElementById('filter-date-to').value = '';
-            if (period === 'today') {
-                document.getElementById('filter-date-from').value = fmt(today);
-                document.getElementById('filter-date-to').value = fmt(today);
-            } else if (period === 'week') {
-                const from = new Date(today); from.setDate(today.getDate() - 7);
-                document.getElementById('filter-date-from').value = fmt(from);
-                document.getElementById('filter-date-to').value = fmt(today);
-            } else if (period === 'month') {
-                const from = new Date(today.getFullYear(), today.getMonth(), 1);
-                document.getElementById('filter-date-from').value = fmt(from);
-                document.getElementById('filter-date-to').value = fmt(today);
-            }
-            applyFilters();
-        }
+    });
 
-        function applyFilters() {
-            const prod = document.getElementById('filter-product').value;
-            let filtered = allData;
-            if (prod) filtered = filtered.filter(r => r.produit === prod);
-            allData = filtered;
-            applyClientFilters();
-        }
 
-        function applyClientFilters() {
-            const search = document.getElementById('filter-search').value.toLowerCase().trim();
-            const dateFrom = document.getElementById('filter-date-from').value;
-            const dateTo = document.getElementById('filter-date-to').value;
-            const sortBy = document.getElementById('sort-by').value;
+    const sorted =
+        Object.entries(quantities)
+            .sort((a, b) => b[1] - a[1]);
 
-            let filtered = allData.filter(r => {
-                if (dateFrom || dateTo) {
-                    const rowDate = parseDMY(r.date);
-                    if (rowDate) {
-                        if (dateFrom && rowDate < new Date(dateFrom)) return false;
-                        if (dateTo) { const to = new Date(dateTo); to.setHours(23,59,59); if (rowDate > to) return false; }
-                    }
-                }
-                if (search) {
-                    const rowText = `${r.id} ${r.produit} ${r.date} ${r.heure} ${r.taux}`.toLowerCase();
-                    if (!rowText.includes(search)) return false;
-                }
-                return true;
-            });
 
-            filtered.sort((a, b) => {
-                switch (sortBy) {
-                    case 'date-asc': return (parseDMY(a.date) - parseDMY(b.date)) || a.heure.localeCompare(b.heure);
-                    case 'qty-desc': return b.quantite - a.quantite;
-                    case 'qty-asc': return a.quantite - b.quantite;
-                    case 'rate-desc': return parseFloat(b.taux) - parseFloat(a.taux);
-                    case 'rate-asc': return parseFloat(a.taux) - parseFloat(b.taux);
-                    case 'product-asc': return a.produit.localeCompare(b.produit);
-                    default: return (parseDMY(b.date) - parseDMY(a.date)) || b.heure.localeCompare(a.heure);
-                }
-            });
+    const labels =
+        sorted.map(item => item[0]);
 
-            displayData = filtered;
-            currentPage = 1;
-            trpByProduct = computeTRP(filtered);
-            updateSummary(filtered);
-            updateChart(filtered);
-            renderPage();
-        }
+    const values =
+        sorted.map(item => item[1]);
 
-        function updateSummary(data) {
-            document.getElementById('hist-total-records').textContent = data.length;
-            document.getElementById('total-count-badge').textContent = `${data.length} enregistrement${data.length !== 1 ? 's' : ''}`;
-            const totalParts = data.reduce((s, r) => s + (r.quantite || 0), 0);
-            document.getElementById('hist-total-parts').textContent = totalParts.toLocaleString('fr-FR');
-            const rates = data.map(r => parseFloat(r.taux.replace('%', ''))).filter(v => !isNaN(v));
-            const avgTRP = rates.length ? Math.round(rates.reduce((a,b)=>a+b,0) / rates.length) : 0;
-            document.getElementById('hist-avg-trp').textContent = `${avgTRP}%`;
-            const distinct = new Set(data.map(r => r.produit)).size;
-            document.getElementById('hist-distinct-products').textContent = distinct;
-        }
 
-        function updateChart(data) {
-            const prodCounts = {};
-            data.forEach(r => {
-                prodCounts[r.produit] = (prodCounts[r.produit] || 0) + r.quantite;
-            });
-            const labels = Object.keys(prodCounts).sort((a,b) => prodCounts[b] - prodCounts[a]).slice(0, 15);
-            const values = labels.map(l => prodCounts[l]);
-            const colors = ['#B9FF00','#00cc66','#dbb95c','#ff4444','#1F404E','#3b82f6','#a855f7','#06b6d4','#f97316','#84cc16'];
+    if (!histChart) {
 
-            if (!histChart) {
-                const ctx = document.getElementById('histChart').getContext('2d');
-                histChart = new Chart(ctx, {
+        const context =
+            document.getElementById(
+                'histChart'
+            ).getContext('2d');
+
+
+        histChart =
+            new Chart(
+                context,
+                {
                     type: 'bar',
-                    data: { labels, datasets: [{ label: 'Pièces totales', data: values, backgroundColor: colors.map(c => c + '99'), borderColor: colors, borderWidth: 2, borderRadius: 6 }] },
+
+                    data: {
+                        labels: labels,
+
+                        datasets: [
+                            {
+                                label:
+                                    'Nombre de produits',
+
+                                data: values,
+
+                                backgroundColor:
+                                    'rgba(185,255,0,0.45)',
+
+                                borderColor:
+                                    '#B9FF00',
+
+                                borderWidth: 1,
+
+                                borderRadius: 5
+                            }
+                        ]
+                    },
+
                     options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+
+                        plugins: {
+
+                            legend: {
+                                display: false
+                            },
+
+                            tooltip: {
+
+                                backgroundColor:
+                                    '#101314',
+
+                                borderColor:
+                                    'rgba(185,255,0,0.3)',
+
+                                borderWidth: 1,
+
+                                titleColor:
+                                    '#B9FF00',
+
+                                bodyColor:
+                                    '#FFFFFF',
+
+                                padding: 10,
+
+                                callbacks: {
+
+                                    title:
+                                        function(items) {
+
+                                            return items[0]
+                                                .label;
+
+                                        },
+
+                                    label:
+                                        function(context) {
+
+                                            const product =
+                                                context.label;
+
+                                            const quantity =
+                                                context.raw;
+
+                                            const family =
+                                                getFamily(product);
+
+                                            return [
+                                                `Produits : ${quantity}`,
+                                                `Famille : ${family || '—'}`
+                                            ];
+
+                                        }
+
+                                }
+
+                            }
+
+                        },
+
                         scales: {
-                            x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8C9498', font: { size: 10 }, maxRotation: 45 } },
-                            y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8C9498' }, beginAtZero: true }
+
+                            x: {
+
+                                grid: {
+                                    color:
+                                        'rgba(255,255,255,0.04)'
+                                },
+
+                                ticks: {
+                                    color:
+                                        '#8C9498',
+
+                                    font: {
+                                        size: 10
+                                    },
+
+                                    maxRotation: 45,
+                                    minRotation: 0
+                                }
+
+                            },
+
+                            y: {
+
+                                beginAtZero: true,
+
+                                grid: {
+                                    color:
+                                        'rgba(255,255,255,0.04)'
+                                },
+
+                                ticks: {
+                                    color:
+                                        '#8C9498'
+                                }
+
+                            }
+
                         }
+
                     }
-                });
-            } else {
-                histChart.data.labels = labels;
-                histChart.data.datasets[0].data = values;
-                histChart.data.datasets[0].backgroundColor = colors.map(c => c + '99');
-                histChart.data.datasets[0].borderColor = colors;
-                histChart.update();
+
+                }
+            );
+
+    } else {
+
+        histChart.data.labels =
+            labels;
+
+        histChart.data.datasets[0].data =
+            values;
+
+        histChart.update();
+
+    }
+
+}
+
+
+/* TABLEAU */
+
+function renderPage() {
+
+    const tbody =
+        document.getElementById(
+            'hist-table-body'
+        );
+
+
+    const total =
+        displayData.length;
+
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                total / PAGE_SIZE
+            )
+        );
+
+
+    if (currentPage > totalPages) {
+        currentPage = totalPages;
+    }
+
+
+    const start =
+        (currentPage - 1) * PAGE_SIZE;
+
+
+    const rows =
+        displayData.slice(
+            start,
+            start + PAGE_SIZE
+        );
+
+
+    tbody.innerHTML = '';
+
+
+    if (rows.length === 0) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty-state">
+                    <i class="fa-solid fa-database"></i>
+                    Aucune mesure enregistrée
+                </td>
+            </tr>
+        `;
+
+    } else {
+
+        rows.forEach((record, index) => {
+
+            const number =
+                start + index + 1;
+
+
+            const rendement =
+                Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        Number(record.rendement) || 0
+                    )
+                );
+
+
+            const date =
+                formatDate(record.date);
+
+
+            const tr =
+                document.createElement('tr');
+
+
+            tr.innerHTML = `
+
+                <td style="color:var(--muted);">
+                    ${number}
+                </td>
+
+                <td>
+                    ${escapeHTML(date)}
+                </td>
+
+                <td>
+                    <span
+                        class="product-badge"
+                        title="${escapeHTML(record.produit)}"
+                    >
+                        ${escapeHTML(record.produit)}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="family-badge">
+                        ${escapeHTML(record.famille)}
+                    </span>
+                </td>
+
+                <td>
+
+                    <div class="rendement">
+
+                        <div class="progress">
+                            <div
+                                class="progress-fill"
+                                style="width:${rendement}%"
+                            ></div>
+                        </div>
+
+                        <strong>
+                            ${formatNumber(record.rendement)}%
+                        </strong>
+
+                    </div>
+
+                </td>
+
+                <td>
+                    <strong>
+                        ${formatNumber(record.chargementTotal)}
+                    </strong>
+                </td>
+
+                <td>
+                    <strong class="value-positive">
+                        ${formatNumber(record.nombreProduits)}
+                    </strong>
+                </td>
+
+            `;
+
+
+            tbody.appendChild(tr);
+
+        });
+
+    }
+
+
+    document.getElementById(
+        'page-info'
+    ).textContent =
+        `Page ${currentPage} / ${totalPages} (${total} ligne${total !== 1 ? 's' : ''})`;
+
+
+    document.getElementById(
+        'btn-prev'
+    ).disabled =
+        currentPage <= 1;
+
+
+    document.getElementById(
+        'btn-next'
+    ).disabled =
+        currentPage >= totalPages;
+
+}
+
+
+/* PAGINATION */
+
+function changePage(delta) {
+
+    currentPage += delta;
+
+    renderPage();
+
+}
+
+
+/* DATE AFFICHAGE */
+
+function formatDate(value) {
+
+    if (!value) {
+        return '—';
+    }
+
+    const date =
+        parseDate(value);
+
+    if (!date) {
+        return String(value);
+    }
+
+    return date.toLocaleString(
+        'fr-FR',
+        {
+            dateStyle: 'short',
+            timeStyle: 'medium'
+        }
+    );
+
+}
+
+
+/* NOMBRE */
+
+function formatNumber(value) {
+
+    const number =
+        Number(value);
+
+    if (isNaN(number)) {
+        return '0';
+    }
+
+    return number.toLocaleString(
+        'fr-FR'
+    );
+
+}
+
+
+/* SECURITE HTML */
+
+function escapeHTML(value) {
+
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+}
+
+
+/* RESET */
+
+function resetFilters() {
+
+    document.getElementById(
+        'filter-search'
+    ).value = '';
+
+    document.getElementById(
+        'filter-product'
+    ).value = '';
+
+    document.getElementById(
+        'filter-period'
+    ).value = 'all';
+
+    document.getElementById(
+        'filter-date'
+    ).value = '';
+
+    document.getElementById(
+        'sort-by'
+    ).value = 'date-desc';
+
+    applyFilters();
+
+}
+
+
+/* EXPORT CSV */
+
+function exportCSV() {
+
+    if (!displayData.length) {
+
+        alert(
+            'Aucune donnée réelle à exporter.'
+        );
+
+        return;
+    }
+
+
+    const headers = [
+        '#',
+        'Date & Heure',
+        'Nom du produit',
+        'Nom de famille',
+        'Rendement',
+        'Chargement total',
+        'Nombre de produits'
+    ];
+
+
+    const rows =
+        displayData.map(
+            (record, index) => [
+
+                index + 1,
+
+                formatDate(record.date),
+
+                record.produit,
+
+                record.famille,
+
+                `${record.rendement}%`,
+
+                record.chargementTotal,
+
+                record.nombreProduits
+
+            ]
+        );
+
+
+    const csvRows =
+        [
+            headers,
+            ...rows
+        ].map(
+            row =>
+                row.map(
+                    value =>
+                        `"${String(value ?? '')
+                            .replace(/"/g, '""')}"`
+                ).join(';')
+        );
+
+
+    const csv =
+        '\uFEFF' +
+        csvRows.join('\r\n');
+
+
+    const blob =
+        new Blob(
+            [csv],
+            {
+                type:
+                    'text/csv;charset=utf-8;'
             }
-        }
+        );
 
-        function renderPage() {
-            const tbody = document.getElementById('hist-table-body');
-            const total = displayData.length;
-            const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-            if (currentPage > totalPages) currentPage = totalPages;
-            const start = (currentPage - 1) * PAGE_SIZE;
-            const end = Math.min(start + PAGE_SIZE, total);
-            const pageRows = displayData.slice(start, end);
-            tbody.innerHTML = '';
 
-            if (pageRows.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:3rem; color:var(--muted);"><i class="fa-solid fa-inbox" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>Aucun résultat</td></tr>`;
-            } else {
-                pageRows.forEach((r, idx) => {
-                    const rowNum = start + idx + 1;
-                    const rateVal = parseFloat(r.taux.replace('%', ''));
-                    let badgeClass = 'badge-lime';
-                    if (rateVal >= 100) badgeClass = 'badge-green';
-                    else if (rateVal > 0) badgeClass = 'badge-amber';
-                    const fillClass = rateVal >= 100 ? 'green' : (rateVal > 50 ? 'amber' : 'lime');
-                    const trpVal = trpByProduct[r.produit] !== undefined ? `${trpByProduct[r.produit]}%` : '-';
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td style="color:var(--muted); font-size:0.75rem;">${rowNum}</td>
-                        <td><strong>#${r.id}</strong></td>
-                        <td>${r.date} <small style="color:var(--muted)">${r.heure}</small></td>
-                        <td><span class="badge badge-lime" style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${r.produit}">${r.produit}</span></td>
-                        <td><strong>${r.quantite}</strong></td>
-                        <td style="color:var(--muted)">${r.quantite_totale}</td>
-                        <td>
-                            <div class="progress-bar-container"><div class="progress-bar-fill ${fillClass}" style="width:${Math.min(rateVal,100)}%"></div></div>
-                            <span class="badge ${badgeClass}">${r.taux}</span>
-                        </td>
-                        <td><span class="trp-badge">${trpVal}</span></td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const link =
+        document.createElement('a');
+
+
+    link.href = url;
+
+    link.download =
+        `historique_valeo_${new Date()
+            .toISOString()
+            .slice(0,10)}.csv`;
+
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+}
+
+
+/* EVENEMENTS */
+
+document.addEventListener(
+    'DOMContentLoaded',
+    async function() {
+
+        updateClock();
+
+        loadUserInfo();
+
+        setupAccountMenu();
+
+        populateProductDropdown();
+
+
+        document.getElementById(
+            'filter-search'
+        ).addEventListener(
+            'input',
+            applyFilters
+        );
+
+
+        document.getElementById(
+            'filter-product'
+        ).addEventListener(
+            'change',
+            applyFilters
+        );
+
+
+        document.getElementById(
+            'filter-period'
+        ).addEventListener(
+            'change',
+            function() {
+
+                document.getElementById(
+                    'filter-date'
+                ).value = '';
+
+                applyFilters();
+
             }
-            document.getElementById('page-info').textContent = `Page ${currentPage} / ${totalPages} (${total} lignes)`;
-            document.getElementById('btn-prev').disabled = currentPage <= 1;
-            document.getElementById('btn-next').disabled = currentPage >= totalPages;
-        }
+        );
 
-        function changePage(delta) {
-            currentPage += delta;
-            renderPage();
-        }
 
-        function resetFilters() {
-            document.getElementById('filter-product').value = '';
-            document.getElementById('filter-date-from').value = '';
-            document.getElementById('filter-date-to').value = '';
-            document.getElementById('filter-search').value = '';
-            document.getElementById('sort-by').value = 'date-desc';
-            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-            // Re-generate data
-            allData = [];
-            const count = 30 + Math.floor(Math.random() * 20);
-            for (let i = 0; i < count; i++) allData.push(generateReading());
-            applyClientFilters();
-        }
+        document.getElementById(
+            'filter-date'
+        ).addEventListener(
+            'change',
+            function() {
 
-        function exportCSV() {
-            const headers = ['Ligne','ID','Date','Heure','Produit','Quantité','Total','Remplissage','TRP'];
-            const rows = displayData.map((r, idx) => [
-                idx + 1, r.id, r.date, r.heure, r.produit,
-                r.quantite, r.quantite_totale, r.taux,
-                trpByProduct[r.produit] !== undefined ? `${trpByProduct[r.produit]}%` : '-'
-            ]);
-            const csv = [headers, ...rows].map(row => row.join(';')).join('\n');
-            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `historique_valeo_${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
-        }
-    </script>
+                document.getElementById(
+                    'filter-period'
+                ).value = 'all';
+
+                applyFilters();
+
+            }
+        );
+
+
+        document.getElementById(
+            'sort-by'
+        ).addEventListener(
+            'change',
+            applyFilters
+        );
+
+
+        await loadHistory();
+
+    }
+);
+
+</script>
+
 </body>
 </html>
-
