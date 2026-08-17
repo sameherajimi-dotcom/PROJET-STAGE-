@@ -1,0 +1,2588 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+
+<head>
+
+```
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>VALEO | Create Secure Access</title>
+
+
+<style>
+
+    /* =====================================================
+       ROOT
+    ===================================================== */
+
+    :root {
+
+        --lime: #B9FF00;
+
+        --bg: #030506;
+
+        --panel:
+            rgba(7, 10, 11, 0.88);
+
+        --input:
+            rgba(255,255,255,0.035);
+
+        --text:
+            rgba(255,255,255,0.92);
+
+        --muted:
+            rgba(255,255,255,0.4);
+
+        --border:
+            rgba(255,255,255,0.09);
+
+        --error:
+            #ff5c5c;
+
+        --warning:
+            #e7c75c;
+
+    }
+
+
+    /* =====================================================
+       RESET
+    ===================================================== */
+
+    * {
+
+        margin: 0;
+        padding: 0;
+
+        box-sizing: border-box;
+
+    }
+
+
+    /* =====================================================
+       BODY
+    ===================================================== */
+
+    body {
+
+        width: 100%;
+
+        min-height: 100vh;
+
+        padding:
+            100px 20px 70px;
+
+        overflow-x: hidden;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        background:
+            var(--bg);
+
+        color:
+            var(--text);
+
+        font-family:
+            "Inter",
+            "Segoe UI",
+            Arial,
+            sans-serif;
+
+    }
+
+
+    /* =====================================================
+       BACKGROUND
+    ===================================================== */
+
+    .background {
+
+        position: fixed;
+
+        inset: 0;
+
+        overflow: hidden;
+
+        pointer-events: none;
+
+        background:
+
+            radial-gradient(
+                circle at 50% 50%,
+                rgba(185,255,0,0.035),
+                transparent 35%
+            ),
+
+            #030506;
+
+    }
+
+
+    /* =====================================================
+       GRID
+    ===================================================== */
+
+    .grid {
+
+        position: absolute;
+
+        inset: -100px;
+
+        background-image:
+
+            linear-gradient(
+                rgba(185,255,0,0.018) 1px,
+                transparent 1px
+            ),
+
+            linear-gradient(
+                90deg,
+                rgba(185,255,0,0.018) 1px,
+                transparent 1px
+            );
+
+        background-size:
+            60px 60px;
+
+        transform:
+            perspective(600px)
+            rotateX(55deg)
+            scale(1.5);
+
+        transform-origin:
+            center bottom;
+
+        animation:
+            gridMove 20s linear infinite;
+
+    }
+
+
+    @keyframes gridMove {
+
+        from {
+
+            background-position:
+                0 0;
+
+        }
+
+        to {
+
+            background-position:
+                0 60px;
+
+        }
+
+    }
+
+
+    /* =====================================================
+       GLOW
+    ===================================================== */
+
+    .glow {
+
+        position: absolute;
+
+        width: 700px;
+
+        height: 700px;
+
+        top: 50%;
+
+        left: 50%;
+
+        transform:
+            translate(-50%,-50%);
+
+        border-radius:
+            50%;
+
+        background:
+            rgba(185,255,0,0.025);
+
+        filter:
+            blur(120px);
+
+        animation:
+            glowPulse
+            5s ease-in-out infinite;
+
+    }
+
+
+    @keyframes glowPulse {
+
+        0%,
+        100% {
+
+            transform:
+                translate(-50%,-50%)
+                scale(0.9);
+
+            opacity:
+                0.5;
+
+        }
+
+        50% {
+
+            transform:
+                translate(-50%,-50%)
+                scale(1.1);
+
+            opacity:
+                1;
+
+        }
+
+    }
+
+
+    /* =====================================================
+       VIGNETTE
+    ===================================================== */
+
+    .vignette {
+
+        position: absolute;
+
+        inset: 0;
+
+        background:
+            radial-gradient(
+                ellipse at center,
+                transparent 20%,
+                rgba(0,0,0,0.82) 100%
+            );
+
+    }
+
+
+    /* =====================================================
+       TOP BAR
+    ===================================================== */
+
+    .top-bar {
+
+        position: fixed;
+
+        top: 0;
+
+        left: 0;
+
+        width: 100%;
+
+        height: 70px;
+
+        padding:
+            0 42px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        border-bottom:
+            1px solid var(--border);
+
+        background:
+            rgba(3,5,6,0.68);
+
+        backdrop-filter:
+            blur(15px);
+
+        z-index: 10;
+
+    }
+
+
+    .brand {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+
+    }
+
+
+    .brand-dot {
+
+        width: 7px;
+
+        height: 7px;
+
+        border-radius: 50%;
+
+        background:
+            var(--lime);
+
+        box-shadow:
+            0 0 12px
+            var(--lime);
+
+    }
+
+
+    .brand-name {
+
+        font-size:
+            11px;
+
+        font-weight:
+            600;
+
+        letter-spacing:
+            4px;
+
+    }
+
+
+    .system-info {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 25px;
+
+        font-size:
+            9px;
+
+        letter-spacing:
+            1.5px;
+
+        color:
+            var(--muted);
+
+    }
+
+
+    .online {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 7px;
+
+    }
+
+
+    .online-dot {
+
+        width: 5px;
+
+        height: 5px;
+
+        border-radius: 50%;
+
+        background:
+            var(--lime);
+
+        box-shadow:
+            0 0 8px
+            var(--lime);
+
+    }
+
+
+    /* =====================================================
+       MAIN CONTAINER
+    ===================================================== */
+
+    .signup-wrapper {
+
+        position: relative;
+
+        z-index: 2;
+
+        width:
+            min(1050px, 94vw);
+
+        display: grid;
+
+        grid-template-columns:
+            0.9fr 1.1fr;
+
+        background:
+            var(--panel);
+
+        border:
+            1px solid
+            var(--border);
+
+        box-shadow:
+
+            0 40px 110px
+            rgba(0,0,0,0.75),
+
+            inset 0 1px 0
+            rgba(255,255,255,0.04);
+
+        backdrop-filter:
+            blur(25px);
+
+        animation:
+            containerIn
+            0.9s
+            cubic-bezier(.22,1,.36,1);
+
+    }
+
+
+    @keyframes containerIn {
+
+        from {
+
+            opacity:
+                0;
+
+            transform:
+                translateY(25px)
+                scale(0.97);
+
+        }
+
+        to {
+
+            opacity:
+                1;
+
+            transform:
+                translateY(0)
+                scale(1);
+
+        }
+
+    }
+
+
+    /* =====================================================
+       CORNERS
+    ===================================================== */
+
+    .corner {
+
+        position: absolute;
+
+        width:
+            24px;
+
+        height:
+            24px;
+
+        border-color:
+            rgba(185,255,0,0.5);
+
+        border-style:
+            solid;
+
+        z-index:
+            10;
+
+    }
+
+
+    .tl {
+
+        top:
+            -1px;
+
+        left:
+            -1px;
+
+        border-width:
+            2px 0 0 2px;
+
+    }
+
+
+    .tr {
+
+        top:
+            -1px;
+
+        right:
+            -1px;
+
+        border-width:
+            2px 2px 0 0;
+
+    }
+
+
+    .bl {
+
+        bottom:
+            -1px;
+
+        left:
+            -1px;
+
+        border-width:
+            0 0 2px 2px;
+
+    }
+
+
+    .br {
+
+        bottom:
+            -1px;
+
+        right:
+            -1px;
+
+        border-width:
+            0 2px 2px 0;
+
+    }
+
+
+    /* =====================================================
+       LEFT VISUAL PANEL
+    ===================================================== */
+
+    .visual-panel {
+
+        position:
+            relative;
+
+        padding:
+            55px 45px;
+
+        display:
+            flex;
+
+        flex-direction:
+            column;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        border-right:
+            1px solid var(--border);
+
+        overflow:
+            hidden;
+
+    }
+
+
+    .visual-label {
+
+        position:
+            absolute;
+
+        top:
+            32px;
+
+        left:
+            40px;
+
+        font-size:
+            9px;
+
+        letter-spacing:
+            3px;
+
+        color:
+            var(--muted);
+
+    }
+
+
+    /* =====================================================
+       SCANNER
+    ===================================================== */
+
+    .scanner {
+
+        position:
+            relative;
+
+        width:
+            220px;
+
+        height:
+            220px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        margin-bottom:
+            30px;
+
+    }
+
+
+    .ring {
+
+        position:
+            absolute;
+
+        inset:
+            0;
+
+        border-radius:
+            50%;
+
+        border:
+            1px solid
+            rgba(185,255,0,0.15);
+
+    }
+
+
+    .ring::after {
+
+        content:
+            "";
+
+        position:
+            absolute;
+
+        inset:
+            -1px;
+
+        border-radius:
+            50%;
+
+        border:
+            2px solid transparent;
+
+        border-top-color:
+            var(--lime);
+
+        border-right-color:
+            rgba(185,255,0,0.2);
+
+        animation:
+            rotate
+            4s linear infinite;
+
+    }
+
+
+    @keyframes rotate {
+
+        to {
+
+            transform:
+                rotate(360deg);
+
+        }
+
+    }
+
+
+    .inner-ring {
+
+        position:
+            absolute;
+
+        width:
+            150px;
+
+        height:
+            150px;
+
+        border-radius:
+            50%;
+
+        border:
+            1px dashed
+            rgba(185,255,0,0.18);
+
+        animation:
+            rotateReverse
+            12s linear infinite;
+
+    }
+
+
+    @keyframes rotateReverse {
+
+        to {
+
+            transform:
+                rotate(-360deg);
+
+        }
+
+    }
+
+
+    .logo {
+
+        position:
+            relative;
+
+        z-index:
+            3;
+
+        width:
+            130px;
+
+        filter:
+            drop-shadow(
+                0 0 20px
+                rgba(185,255,0,0.12)
+            );
+
+    }
+
+
+    .logo img {
+
+        width:
+            100%;
+
+        display:
+            block;
+
+    }
+
+
+    .scan-line {
+
+        position:
+            absolute;
+
+        left:
+            30px;
+
+        right:
+            30px;
+
+        height:
+            1px;
+
+        background:
+            var(--lime);
+
+        box-shadow:
+            0 0 10px
+            var(--lime);
+
+        animation:
+            scan
+            2.8s ease-in-out infinite;
+
+        z-index:
+            4;
+
+    }
+
+
+    @keyframes scan {
+
+        0% {
+
+            top:
+                35px;
+
+            opacity:
+                0;
+
+        }
+
+        20% {
+
+            opacity:
+                1;
+
+        }
+
+        80% {
+
+            opacity:
+                1;
+
+        }
+
+        100% {
+
+            top:
+                185px;
+
+            opacity:
+                0;
+
+        }
+
+    }
+
+
+    /* =====================================================
+       VISUAL CONTENT
+    ===================================================== */
+
+    .visual-heading {
+
+        font-size:
+            21px;
+
+        font-weight:
+            300;
+
+        letter-spacing:
+            4px;
+
+        text-transform:
+            uppercase;
+
+        margin-bottom:
+            10px;
+
+    }
+
+
+    .visual-description {
+
+        max-width:
+            290px;
+
+        text-align:
+            center;
+
+        font-size:
+            11px;
+
+        line-height:
+            1.8;
+
+        color:
+            var(--muted);
+
+    }
+
+
+    /* =====================================================
+       MODULES
+    ===================================================== */
+
+    .modules {
+
+        display:
+            flex;
+
+        gap:
+            25px;
+
+        margin-top:
+            35px;
+
+    }
+
+
+    .module {
+
+        text-align:
+            center;
+
+    }
+
+
+    .module-name {
+
+        display:
+            block;
+
+        font-size:
+            7px;
+
+        letter-spacing:
+            1.5px;
+
+        color:
+            rgba(255,255,255,0.3);
+
+        margin-bottom:
+            5px;
+
+    }
+
+
+    .module-status {
+
+        font-size:
+            8px;
+
+        color:
+            rgba(185,255,0,0.65);
+
+    }
+
+
+    /* =====================================================
+       RIGHT FORM
+    ===================================================== */
+
+    .form-panel {
+
+        padding:
+            45px 55px;
+
+    }
+
+
+    .back-link {
+
+        display:
+            inline-block;
+
+        margin-bottom:
+            25px;
+
+        color:
+            var(--muted);
+
+        font-size:
+            10px;
+
+        text-decoration:
+            none;
+
+        transition:
+            0.2s;
+
+    }
+
+
+    .back-link:hover {
+
+        color:
+            var(--lime);
+
+    }
+
+
+    .form-label {
+
+        display:
+            block;
+
+        font-size:
+            9px;
+
+        letter-spacing:
+            2.5px;
+
+        color:
+            var(--lime);
+
+        margin-bottom:
+            10px;
+
+    }
+
+
+    .form-title {
+
+        font-size:
+            28px;
+
+        font-weight:
+            400;
+
+        letter-spacing:
+            1px;
+
+        margin-bottom:
+            8px;
+
+    }
+
+
+    .form-subtitle {
+
+        font-size:
+            11px;
+
+        color:
+            var(--muted);
+
+        line-height:
+            1.7;
+
+        margin-bottom:
+            28px;
+
+    }
+
+
+    /* =====================================================
+       FORM ROW
+    ===================================================== */
+
+    .form-row {
+
+        display:
+            flex;
+
+        gap:
+            14px;
+
+    }
+
+
+    .form-row .form-group {
+
+        flex:
+            1;
+
+    }
+
+
+    /* =====================================================
+       FORM GROUP
+    ===================================================== */
+
+    .form-group {
+
+        margin-bottom:
+            16px;
+
+    }
+
+
+    .form-group label {
+
+        display:
+            block;
+
+        font-size:
+            9px;
+
+        letter-spacing:
+            1px;
+
+        color:
+            rgba(255,255,255,0.6);
+
+        margin-bottom:
+            7px;
+
+    }
+
+
+    .form-group input,
+    .form-group select {
+
+        width:
+            100%;
+
+        height:
+            45px;
+
+        padding:
+            0 14px;
+
+        background:
+            var(--input);
+
+        border:
+            1px solid
+            rgba(255,255,255,0.08);
+
+        border-radius:
+            4px;
+
+        outline:
+            none;
+
+        color:
+            white;
+
+        font-size:
+            11px;
+
+        font-family:
+            inherit;
+
+        transition:
+            0.25s;
+
+    }
+
+
+    .form-group select {
+
+        cursor:
+            pointer;
+
+    }
+
+
+    .form-group select option {
+
+        background:
+            #0b0e0f;
+
+        color:
+            white;
+
+    }
+
+
+    .form-group input:focus,
+    .form-group select:focus {
+
+        border-color:
+            rgba(185,255,0,0.6);
+
+        background:
+            rgba(185,255,0,0.025);
+
+        box-shadow:
+            0 0 0 3px
+            rgba(185,255,0,0.04);
+
+    }
+
+
+    .form-group input::placeholder {
+
+        color:
+            rgba(255,255,255,0.2);
+
+    }
+
+
+    /* =====================================================
+       PASSWORD STRENGTH
+    ===================================================== */
+
+    .password-strength {
+
+        display:
+            flex;
+
+        gap:
+            4px;
+
+        margin-top:
+            8px;
+
+    }
+
+
+    .password-strength .bar {
+
+        flex:
+            1;
+
+        height:
+            3px;
+
+        background:
+            rgba(255,255,255,0.08);
+
+        border-radius:
+            5px;
+
+        transition:
+            0.3s;
+
+    }
+
+
+    .password-strength .bar.active.weak {
+
+        background:
+            #ff4444;
+
+    }
+
+
+    .password-strength .bar.active.medium {
+
+        background:
+            var(--warning);
+
+    }
+
+
+    .password-strength .bar.active.strong {
+
+        background:
+            var(--lime);
+
+        box-shadow:
+            0 0 6px
+            rgba(185,255,0,0.4);
+
+    }
+
+
+    .strength-text {
+
+        font-size:
+            9px;
+
+        margin-top:
+            6px;
+
+        display:
+            none;
+
+    }
+
+
+    .strength-text.visible {
+
+        display:
+            block;
+
+    }
+
+
+    .strength-text.weak {
+
+        color:
+            #ff4444;
+
+    }
+
+
+    .strength-text.medium {
+
+        color:
+            var(--warning);
+
+    }
+
+
+    .strength-text.strong {
+
+        color:
+            var(--lime);
+
+    }
+
+
+    /* =====================================================
+       TERMS
+    ===================================================== */
+
+    .terms-check {
+
+        margin:
+            5px 0 20px;
+
+    }
+
+
+    .terms-check label {
+
+        display:
+            flex;
+
+        align-items:
+            flex-start;
+
+        gap:
+            8px;
+
+        font-size:
+            9px;
+
+        line-height:
+            1.6;
+
+        color:
+            var(--muted);
+
+        cursor:
+            pointer;
+
+    }
+
+
+    .terms-check input {
+
+        width:
+            14px;
+
+        height:
+            14px;
+
+        margin-top:
+            2px;
+
+        accent-color:
+            var(--lime);
+
+    }
+
+
+    .terms-check a {
+
+        color:
+            var(--lime);
+
+        text-decoration:
+            none;
+
+    }
+
+
+    /* =====================================================
+       ERROR
+    ===================================================== */
+
+    .error-message {
+
+        display:
+            none;
+
+        margin-top:
+            6px;
+
+        font-size:
+            9px;
+
+        color:
+            var(--error);
+
+    }
+
+
+    .error-message.visible {
+
+        display:
+            block;
+
+    }
+
+
+    /* =====================================================
+       CODE DISPLAY
+    ===================================================== */
+
+    .code-display {
+
+        display:
+            none;
+
+        margin:
+            12px 0 18px;
+
+        padding:
+            16px;
+
+        text-align:
+            center;
+
+        background:
+            rgba(185,255,0,0.035);
+
+        border:
+            1px dashed
+            rgba(185,255,0,0.5);
+
+        animation:
+            codeAppear
+            0.5s ease;
+
+    }
+
+
+    .code-display.visible {
+
+        display:
+            block;
+
+    }
+
+
+    @keyframes codeAppear {
+
+        from {
+
+            opacity:
+                0;
+
+            transform:
+                translateY(10px);
+
+        }
+
+        to {
+
+            opacity:
+                1;
+
+            transform:
+                translateY(0);
+
+        }
+
+    }
+
+
+    .code-label {
+
+        font-size:
+            8px;
+
+        letter-spacing:
+            2px;
+
+        color:
+            var(--muted);
+
+        margin-bottom:
+            8px;
+
+    }
+
+
+    .code-value {
+
+        font-size:
+            25px;
+
+        font-weight:
+            700;
+
+        letter-spacing:
+            4px;
+
+        color:
+            var(--lime);
+
+        font-family:
+            monospace;
+
+        text-shadow:
+            0 0 15px
+            rgba(185,255,0,0.25);
+
+    }
+
+
+    .code-hint {
+
+        margin-top:
+            8px;
+
+        font-size:
+            8px;
+
+        color:
+            var(--muted);
+
+    }
+
+
+    /* =====================================================
+       SIGNUP BUTTON
+    ===================================================== */
+
+    .btn-signup {
+
+        position:
+            relative;
+
+        width:
+            100%;
+
+        height:
+            48px;
+
+        border:
+            none;
+
+        border-radius:
+            4px;
+
+        background:
+            var(--lime);
+
+        color:
+            #080A0B;
+
+        font-size:
+            10px;
+
+        font-weight:
+            700;
+
+        letter-spacing:
+            2px;
+
+        text-transform:
+            uppercase;
+
+        cursor:
+            pointer;
+
+        overflow:
+            hidden;
+
+        transition:
+            0.25s;
+
+    }
+
+
+    .btn-signup:hover {
+
+        transform:
+            translateY(-2px);
+
+        box-shadow:
+            0 10px 30px
+            rgba(185,255,0,0.2);
+
+    }
+
+
+    .btn-signup:disabled {
+
+        opacity:
+            0.45;
+
+        cursor:
+            not-allowed;
+
+        transform:
+            none;
+
+    }
+
+
+    /* =====================================================
+       SPINNER
+    ===================================================== */
+
+    .spinner {
+
+        display:
+            none;
+
+        width:
+            17px;
+
+        height:
+            17px;
+
+        margin:
+            auto;
+
+        border:
+            2px solid
+            rgba(0,0,0,0.2);
+
+        border-top-color:
+            #080A0B;
+
+        border-radius:
+            50%;
+
+        animation:
+            spin
+            0.7s linear infinite;
+
+    }
+
+
+    .spinner.visible {
+
+        display:
+            block;
+
+    }
+
+
+    @keyframes spin {
+
+        to {
+
+            transform:
+                rotate(360deg);
+
+        }
+
+    }
+
+
+    /* =====================================================
+       SUCCESS
+    ===================================================== */
+
+    .success-message {
+
+        display:
+            none;
+
+        margin-top:
+            12px;
+
+        text-align:
+            center;
+
+        font-size:
+            10px;
+
+        color:
+            var(--lime);
+
+    }
+
+
+    .success-message.visible {
+
+        display:
+            block;
+
+    }
+
+
+    /* =====================================================
+       DIVIDER
+    ===================================================== */
+
+    .divider {
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        gap:
+            12px;
+
+        margin:
+            20px 0;
+
+        font-size:
+            8px;
+
+        letter-spacing:
+            2px;
+
+        color:
+            rgba(255,255,255,0.2);
+
+    }
+
+
+    .divider::before,
+    .divider::after {
+
+        content:
+            "";
+
+        flex:
+            1;
+
+        height:
+            1px;
+
+        background:
+            var(--border);
+
+    }
+
+
+    /* =====================================================
+       LOGIN LINK
+    ===================================================== */
+
+    .login-link {
+
+        text-align:
+            center;
+
+        font-size:
+            10px;
+
+        color:
+            var(--muted);
+
+    }
+
+
+    .login-link a {
+
+        color:
+            var(--lime);
+
+        text-decoration:
+            none;
+
+        font-weight:
+            600;
+
+    }
+
+
+    /* =====================================================
+       FOOTER
+    ===================================================== */
+
+    .footer {
+
+        position:
+            fixed;
+
+        bottom:
+            15px;
+
+        left:
+            0;
+
+        right:
+            0;
+
+        text-align:
+            center;
+
+        font-size:
+            8px;
+
+        letter-spacing:
+            2px;
+
+        color:
+            rgba(255,255,255,0.18);
+
+    }
+
+
+    /* =====================================================
+       RESPONSIVE
+    ===================================================== */
+
+    @media (max-width: 850px) {
+
+        .signup-wrapper {
+
+            grid-template-columns:
+                1fr;
+
+        }
+
+
+        .visual-panel {
+
+            display:
+                none;
+
+        }
+
+
+        .form-panel {
+
+            padding:
+                45px 40px;
+
+        }
+
+    }
+
+
+    @media (max-width: 600px) {
+
+        body {
+
+            padding:
+                90px 15px 60px;
+
+        }
+
+
+        .top-bar {
+
+            padding:
+                0 20px;
+
+        }
+
+
+        .system-info span {
+
+            display:
+                none;
+
+        }
+
+
+        .form-panel {
+
+            padding:
+                35px 25px;
+
+        }
+
+
+        .form-row {
+
+            flex-direction:
+                column;
+
+            gap:
+                0;
+
+        }
+
+
+        .form-title {
+
+            font-size:
+                24px;
+
+        }
+
+    }
+
+</style>
+```
+
+</head>
+
+<body>
+
+```
+<!-- =====================================================
+     BACKGROUND
+===================================================== -->
+
+<div class="background">
+
+    <div class="grid"></div>
+
+    <div class="glow"></div>
+
+    <div class="vignette"></div>
+
+</div>
+
+
+<!-- =====================================================
+     TOP BAR
+===================================================== -->
+
+<header class="top-bar">
+
+
+    <div class="brand">
+
+        <span class="brand-dot"></span>
+
+        <span class="brand-name">
+
+            VALEO
+
+        </span>
+
+    </div>
+
+
+    <div class="system-info">
+
+
+        <div class="online">
+
+            <span class="online-dot"></span>
+
+            SECURE SYSTEM ONLINE
+
+        </div>
+
+
+        <span>
+
+            VISION AI PLATFORM
+
+        </span>
+
+
+        <span>
+
+            v1.0.0
+
+        </span>
+
+
+    </div>
+
+
+</header>
+
+
+<!-- =====================================================
+     SIGNUP
+===================================================== -->
+
+<main class="signup-wrapper">
+
+
+    <!-- CORNERS -->
+
+    <span class="corner tl"></span>
+
+    <span class="corner tr"></span>
+
+    <span class="corner bl"></span>
+
+    <span class="corner br"></span>
+
+
+    <!-- =================================================
+         VISUAL PANEL
+    ================================================= -->
+
+    <section class="visual-panel">
+
+
+        <div class="visual-label">
+
+            OPERATOR REGISTRATION
+
+        </div>
+
+
+        <div class="scanner">
+
+
+            <div class="ring"></div>
+
+            <div class="inner-ring"></div>
+
+            <div class="scan-line"></div>
+
+
+            <div class="logo">
+
+                <img
+                    src="images%20(1).png"
+                    alt="VALEO"
+                >
+
+            </div>
+
+
+        </div>
+
+
+        <h2 class="visual-heading">
+
+            Smart Vision
+
+        </h2>
+
+
+        <p class="visual-description">
+
+            Créez votre accès sécurisé
+            à la plateforme intelligente
+            de supervision et d'inspection industrielle.
+
+        </p>
+
+
+        <div class="modules">
+
+
+            <div class="module">
+
+                <span class="module-name">
+
+                    SECURITY
+
+                </span>
+
+                <span class="module-status">
+
+                    ACTIVE
+
+                </span>
+
+            </div>
+
+
+            <div class="module">
+
+                <span class="module-name">
+
+                    AI ENGINE
+
+                </span>
+
+                <span class="module-status">
+
+                    READY
+
+                </span>
+
+            </div>
+
+
+            <div class="module">
+
+                <span class="module-name">
+
+                    DATABASE
+
+                </span>
+
+                <span class="module-status">
+
+                    ONLINE
+
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =================================================
+         FORM PANEL
+    ================================================= -->
+
+    <section class="form-panel">
+
+
+        <a
+            href="loading.html"
+            class="back-link"
+        >
+
+            ← Retour à l'accueil
+
+        </a>
+
+
+        <span class="form-label">
+
+            NEW OPERATOR ACCESS
+
+        </span>
+
+
+        <h1 class="form-title">
+
+            Créer un accès
+
+        </h1>
+
+
+        <p class="form-subtitle">
+
+            Enregistrez vos informations pour générer
+            votre identifiant sécurisé.
+
+        </p>
+
+
+        <!-- =================================================
+             FORM
+        ================================================= -->
+
+        <form
+            id="signupForm"
+            novalidate
+        >
+
+
+            <!-- NAME -->
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+
+                    <label for="firstName">
+
+                        PRÉNOM
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="firstName"
+                        placeholder="Jean"
+                        autocomplete="given-name"
+                        required
+                    >
+
+
+                    <div
+                        class="error-message"
+                        id="firstNameError"
+                    >
+
+                        Veuillez entrer votre prénom.
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="form-group">
+
+
+                    <label for="lastName">
+
+                        NOM
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="lastName"
+                        placeholder="Dupont"
+                        autocomplete="family-name"
+                        required
+                    >
+
+
+                    <div
+                        class="error-message"
+                        id="lastNameError"
+                    >
+
+                        Veuillez entrer votre nom.
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- EMAIL -->
+
+            <div class="form-group">
+
+
+                <label for="signupEmail">
+
+                    EMAIL PROFESSIONNEL
+
+                </label>
+
+
+                <input
+                    type="email"
+                    id="signupEmail"
+                    placeholder="jean.dupont@valeo.com"
+                    autocomplete="email"
+                    required
+                >
+
+
+                <div
+                    class="error-message"
+                    id="signupEmailError"
+                >
+
+                    Veuillez entrer un email valide.
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ROLE -->
+
+            <div class="form-group">
+
+
+                <label for="signupRole">
+
+                    RÔLE
+
+                </label>
+
+
+                <select
+                    id="signupRole"
+                    required
+                >
+
+
+                    <option value="">
+
+                        Sélectionnez votre rôle
+
+                    </option>
+
+
+                    <option value="Ingénieur">
+
+                        Ingénieur
+
+                    </option>
+
+
+                    <option value="Technicien">
+
+                        Technicien
+
+                    </option>
+
+
+                    <option value="Ouvrier">
+
+                        Ouvrier
+
+                    </option>
+
+
+                </select>
+
+
+                <div
+                    class="error-message"
+                    id="signupRoleError"
+                >
+
+                    Veuillez sélectionner un rôle.
+
+                </div>
+
+
+            </div>
+
+
+            <!-- PASSWORD -->
+
+            <div class="form-group">
+
+
+                <label for="signupPassword">
+
+                    MOT DE PASSE
+
+                </label>
+
+
+                <input
+                    type="password"
+                    id="signupPassword"
+                    placeholder="Minimum 8 caractères"
+                    autocomplete="new-password"
+                    minlength="8"
+                    required
+                >
+
+
+                <div
+                    class="password-strength"
+                    id="passwordStrength"
+                >
+
+
+                    <div
+                        class="bar"
+                        data-index="0"
+                    ></div>
+
+
+                    <div
+                        class="bar"
+                        data-index="1"
+                    ></div>
+
+
+                    <div
+                        class="bar"
+                        data-index="2"
+                    ></div>
+
+
+                    <div
+                        class="bar"
+                        data-index="3"
+                    ></div>
+
+
+                </div>
+
+
+                <div
+                    class="strength-text"
+                    id="strengthText"
+                >
+
+                    Force du mot de passe
+
+                </div>
+
+
+                <div
+                    class="error-message"
+                    id="signupPasswordError"
+                >
+
+                    Le mot de passe doit contenir
+                    au moins 8 caractères.
+
+                </div>
+
+
+            </div>
+
+
+            <!-- CONFIRM PASSWORD -->
+
+            <div class="form-group">
+
+
+                <label for="confirmPassword">
+
+                    CONFIRMATION
+
+                </label>
+
+
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    placeholder="Confirmez votre mot de passe"
+                    autocomplete="new-password"
+                    required
+                >
+
+
+                <div
+                    class="error-message"
+                    id="confirmError"
+                >
+
+                    Les mots de passe ne correspondent pas.
+
+                </div>
+
+
+            </div>
+
+
+            <!-- TERMS -->
+
+            <div class="terms-check">
+
+
+                <label>
+
+
+                    <input
+                        type="checkbox"
+                        id="terms"
+                        required
+                    >
+
+
+                    <span>
+
+                        J'accepte les
+
+                        <a href="#">
+
+                            conditions d'utilisation
+
+                        </a>
+
+                        et la
+
+                        <a href="#">
+
+                            politique de confidentialité
+
+                        </a>
+
+                        de Valeo.
+
+                    </span>
+
+
+                </label>
+
+
+                <div
+                    class="error-message"
+                    id="termsError"
+                >
+
+                    Vous devez accepter les conditions.
+
+                </div>
+
+
+            </div>
+
+
+            <!-- GENERATED CODE -->
+
+            <div
+                class="code-display"
+                id="codeDisplay"
+            >
+
+
+                <div class="code-label">
+
+                    VOTRE CODE DE CONNEXION UNIQUE
+
+                </div>
+
+
+                <div
+                    class="code-value"
+                    id="loginCodeDisplay"
+                >
+
+                    ------
+
+                </div>
+
+
+                <div class="code-hint">
+
+                    Conservez ce code.
+                    Il sera nécessaire pour accéder
+                    à la plateforme.
+
+                </div>
+
+
+            </div>
+
+
+            <!-- BUTTON -->
+
+            <button
+                type="submit"
+                class="btn-signup"
+                id="signupBtn"
+            >
+
+
+                <span id="signupBtnText">
+
+                    CRÉER MON ACCÈS
+
+                </span>
+
+
+                <span
+                    class="spinner"
+                    id="signupSpinner"
+                ></span>
+
+
+            </button>
+
+
+            <!-- SUCCESS -->
+
+            <div
+                class="success-message"
+                id="signupSuccess"
+            >
+
+                Accès créé avec succès.
+
+            </div>
+
+
+        </form>
+
+
+        <!-- DIVIDER -->
+
+        <div class="divider">
+
+            OU
+
+        </div>
+
+
+        <!-- LOGIN -->
+
+        <div class="login-link">
+
+            Vous avez déjà un accès ?
+
+            <a href="login.html">
+
+                Se connecter
+
+            </a>
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer class="footer">
+
+    VALEO SMART VISION
+    &nbsp;•&nbsp;
+    SECURE OPERATOR ACCESS
+
+</footer>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
+<script src="js/api.js"></script>
+
+<script src="js/signup.js"></script>
+```
+
+</body>
+
+</html>

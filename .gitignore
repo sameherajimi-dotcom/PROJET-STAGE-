@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # .gitignore généré — ignore les fichiers/repères sensibles ou volumineux
 
 # Node
@@ -56,3 +57,23 @@ build/
 # Misc
 .cache/
 .pytest_cache/
+=======
+# Node dependencies
+node_modules/
+npm-debug.log*
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+
+# Temporary & local files
+.tmp/
+.vscode/
+*.log
+
+# Server uploads/captures
+server/captures/
+>>>>>>> 21390d0cf65a5cdd1377db67e45c981f0c74de52
