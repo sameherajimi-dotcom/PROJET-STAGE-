@@ -2355,7 +2355,7 @@
 
             const rate =
                 parseFloat(
-                    r.taux.replace('%', '')
+                    String(r.taux ?? '').replace('%', '')
                 );
 
 

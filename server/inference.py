@@ -1,78 +1,115 @@
 #!/usr/bin/env python3
-"""Pont serveur vers le workflow Roboflow Valeo.
-
-La clé est lue depuis VALEO_ROBOFLOW_API_KEY : elle ne doit jamais être
-ajoutée au dépôt, au JavaScript du navigateur, ou à une page HTML.
 """
+Pont serveur vers les workflows Roboflow Valeo.
+
+MODELE 1 : Détection des produits.
+MODELE 2 : Détection / comptage des JIGS.
+
+Le modèle 1 conserve sa compression.
+Le modèle 2 reçoit l'image originale pour préserver les petits JIGS.
+"""
+
+import concurrent.futures
 import json
 import os
 import sys
-import base64
-from io import BytesIO
-from PIL import Image
 
+from PIL import Image
 from inference_sdk import InferenceHTTPClient
 
+# ============================================================
+# CONFIGURATION MODELE 1 - PRODUITS
+# ============================================================
 WORKSPACE_NAME = "iyeds-workspace-tzluv"
 WORKFLOW_ID = "valeo-vvaleo-pz9hm-1-resnet18-t1-logic"
+PRIMARY_MIN_CONFIDENCE = 0.40
+
+# ============================================================
+# CONFIGURATION MODELE 2 - JIGS
+# ============================================================
 SECOND_WORKSPACE_NAME = "new-workspace-syrvd"
 SECOND_WORKFLOW_ID = "valeodetectionororrec-vvaleodetection-rec-ugvjh-1-yolo11n-t1-logic"
-MIN_CONFIDENCE = 0.40
+JIG_MIN_CONFIDENCE = 0.20
 
 
 def compress_image(image_path, max_width=640, max_height=480, quality=75):
-    """Réduit la taille de l'image pour accélérer l'analyse."""
+    """Compression utilisée uniquement pour le modèle 1."""
     try:
         img = Image.open(image_path)
-        # Redimensionner si nécessaire
+
         if img.width > max_width or img.height > max_height:
-            img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
-        # Sauvegarder avec qualité réduite
-        compressed_path = image_path.replace('.jpg', '_compressed.jpg')
-        img.save(compressed_path, 'JPEG', quality=quality, optimize=True)
+            img.thumbnail(
+                (max_width, max_height),
+                Image.Resampling.LANCZOS
+            )
+
+        compressed_path = image_path.rsplit(".", 1)[0] + "_compressed.jpg"
+        img.save(
+            compressed_path,
+            "JPEG",
+            quality=quality,
+            optimize=True
+        )
         return compressed_path
+
     except Exception as e:
         print(f"Compression warning: {e}", file=sys.stderr)
         return image_path
 
 
 def find_predictions(value):
-    """Extrait les prédictions des différentes formes de réponse Workflow."""
+    """Extrait récursivement les listes 'predictions' d'une réponse Roboflow."""
     all_predictions = []
+
     if isinstance(value, dict):
         predictions = value.get("predictions")
         if isinstance(predictions, list):
             all_predictions.extend(predictions)
+
         for child in value.values():
             all_predictions.extend(find_predictions(child))
+
     elif isinstance(value, list):
         for child in value:
             all_predictions.extend(find_predictions(child))
+
     return all_predictions
 
 
-def normalise_detection(prediction):
-    """Normalise les sorties de détection et de classification Roboflow."""
+def normalize_detection(prediction, min_confidence):
+    """Transforme une prédiction Roboflow en format standard."""
     if not isinstance(prediction, dict):
         return None
-    confidence = prediction.get("confidence", prediction.get("confidence_score", 0))
+
+    confidence = prediction.get(
+        "confidence",
+        prediction.get("confidence_score", 0)
+    )
+
     try:
         confidence = float(confidence)
     except (TypeError, ValueError):
         return None
-    if confidence < MIN_CONFIDENCE:
+
+    if confidence < min_confidence:
         return None
 
-    label = prediction.get("class") or prediction.get("class_name") or prediction.get("label")
+    label = (
+        prediction.get("class")
+        or prediction.get("class_name")
+        or prediction.get("label")
+    )
+
     if not label:
         return None
+
     return {
         "product": str(label),
         "confidence": confidence,
         "x": prediction.get("x"),
         "y": prediction.get("y"),
         "width": prediction.get("width"),
-        "height": prediction.get("height"),
+        "height": prediction.get("height")
     }
 
 
@@ -80,32 +117,30 @@ def main(image_path):
     api_key = os.environ.get("VALEO_ROBOFLOW_API_KEY")
     if not api_key:
         raise RuntimeError("VALEO_ROBOFLOW_API_KEY est manquante")
+
     second_api_key = os.environ.get("VALEO_ROBOFLOW_SECOND_API_KEY")
     if not second_api_key:
-        raise RuntimeError("VALEO_ROBOFLOW_SECOND_API_KEY is missing")
+        raise RuntimeError("VALEO_ROBOFLOW_SECOND_API_KEY est manquante")
 
-    # Compress image for faster processing
     compressed_path = compress_image(image_path)
 
     first_client = InferenceHTTPClient(
         api_url="https://serverless.roboflow.com",
-        api_key=api_key,
-    )
-    second_client = InferenceHTTPClient(
-        api_url="https://serverless.roboflow.com",
-        api_key=second_api_key,
+        api_key=api_key
     )
 
-    # Run both workflows in parallel using threading
-    import concurrent.futures
-    
+    second_client = InferenceHTTPClient(
+        api_url="https://serverless.roboflow.com",
+        api_key=second_api_key
+    )
+
     def run_first_workflow():
         try:
             return first_client.run_workflow(
                 workspace_name=WORKSPACE_NAME,
                 workflow_id=WORKFLOW_ID,
                 images={"image": compressed_path},
-                use_cache=True,
+                use_cache=True
             )
         except Exception as e:
             print(f"Error in first workflow: {e}", file=sys.stderr)
@@ -116,25 +151,29 @@ def main(image_path):
             return second_client.run_workflow(
                 workspace_name=SECOND_WORKSPACE_NAME,
                 workflow_id=SECOND_WORKFLOW_ID,
-                images={"image": compressed_path},
-                use_cache=True,
+                images={"image": image_path},
+                use_cache=False
             )
         except Exception as e:
             print(f"Error in second workflow: {e}", file=sys.stderr)
             return {}
 
-    # Execute both workflows in parallel
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         first_future = executor.submit(run_first_workflow)
         second_future = executor.submit(run_second_workflow)
-        
         first_result = first_future.result()
         second_result = second_future.result()
 
-    # Process first workflow (product detection)
+    # ========================================================
+    # MODELE 1 - PRODUITS
+    # ========================================================
     product_detections = []
+
     for prediction in find_predictions(first_result):
-        detection = normalise_detection(prediction)
+        detection = normalize_detection(
+            prediction,
+            PRIMARY_MIN_CONFIDENCE
+        )
         if detection:
             detection["model"] = "primary"
             product_detections.append(detection)
@@ -144,10 +183,22 @@ def main(image_path):
         product = detection["product"]
         counts[product] = counts.get(product, 0) + 1
 
-    # Process second workflow (jig counting)
+    # ========================================================
+    # MODELE 2 - JIGS
+    # ========================================================
     jig_detections = []
-    for prediction in find_predictions(second_result):
-        detection = normalise_detection(prediction)
+    second_predictions = find_predictions(second_result)
+
+    print(
+        f"[JIG] Predictions brutes : {len(second_predictions)}",
+        file=sys.stderr
+    )
+
+    for prediction in second_predictions:
+        detection = normalize_detection(
+            prediction,
+            JIG_MIN_CONFIDENCE
+        )
         if detection:
             detection["model"] = "secondary"
             jig_detections.append(detection)
@@ -157,20 +208,31 @@ def main(image_path):
         jig = detection["product"]
         jig_counts[jig] = jig_counts.get(jig, 0) + 1
 
-    # Clean up compressed image
+    jig_count = len(jig_detections)
+
+    print(
+        f"[JIG] Après seuil {JIG_MIN_CONFIDENCE:.2f} : {jig_count}",
+        file=sys.stderr
+    )
+
+    # ========================================================
+    # NETTOYAGE
+    # ========================================================
     try:
         if compressed_path != image_path and os.path.exists(compressed_path):
             os.remove(compressed_path)
-    except:
+    except Exception:
         pass
 
-    print(json.dumps({
+    result = {
         "detections": product_detections,
         "counts": counts,
         "jig_detections": jig_detections,
-        "jig_count": len(jig_detections),
-        "jig_counts": jig_counts,
-    }))
+        "jig_count": jig_count,
+        "jig_counts": jig_counts
+    }
+
+    print(json.dumps(result, ensure_ascii=False))
 
 
 if __name__ == "__main__":

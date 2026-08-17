@@ -1573,129 +1573,49 @@ function normalizeRecord(record) {
 /* CHARGEMENT DES DONNEES REELLES */
 
 async function loadHistory() {
-
-    let loaded = false;
-
     /*
-     * Première source :
-     * données éventuellement fournies par le backend.
+     * Source unique : le serveur.
+     *
+     * Le serveur écrit une ligne uniquement après une détection
+     * positive d'au moins un produit. Ainsi, historique.html
+     * affiche exactement les événements enregistrés par le système.
      */
-
     try {
+        const response = await fetch('/api/history', {
+            method: 'GET',
+            cache: 'no-store'
+        });
 
-        const response =
-            await fetch('/api/history', {
-                method: 'GET',
-                cache: 'no-store'
-            });
-
-        if (response.ok) {
-
-            const data =
-                await response.json();
-
-            const records =
-                Array.isArray(data)
-                    ? data
-                    : (
-                        Array.isArray(data.history)
-                            ? data.history
-                            : (
-                                Array.isArray(data.data)
-                                    ? data.data
-                                    : []
-                            )
-                    );
-
-            allData =
-                records
-                    .map(normalizeRecord)
-                    .filter(Boolean);
-
-            loaded = true;
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
         }
+
+        const data = await response.json();
+        const records = Array.isArray(data)
+            ? data
+            : (Array.isArray(data.history)
+                ? data.history
+                : (Array.isArray(data.data) ? data.data : []));
+
+        allData = records
+            .map(normalizeRecord)
+            .filter(Boolean);
+
+        allData.sort((a, b) => {
+            const da = parseDate(a.date)?.getTime() || 0;
+            const db = parseDate(b.date)?.getTime() || 0;
+            return db - da;
+        });
+
+        loaded = true;
+        applyFilters();
 
     } catch (error) {
-
-        console.log(
-            'Endpoint historique indisponible.'
-        );
-
+        console.error('Impossible de charger l\'historique serveur:', error);
+        allData = [];
+        loaded = false;
+        applyFilters();
     }
-
-
-    /*
-     * Deuxième source :
-     * historique éventuellement stocké par le dashboard.
-     *
-     * Aucune donnée n'est créée ici.
-     */
-
-    if (!loaded || allData.length === 0) {
-
-        const storageKeys = [
-            'valeo_history',
-            'valeoHistory',
-            'historyData',
-            'dashboardHistory'
-        ];
-
-        for (const key of storageKeys) {
-
-            try {
-
-                const stored =
-                    localStorage.getItem(key);
-
-                if (!stored) {
-                    continue;
-                }
-
-                const parsed =
-                    JSON.parse(stored);
-
-                const records =
-                    Array.isArray(parsed)
-                        ? parsed
-                        : (
-                            Array.isArray(parsed.history)
-                                ? parsed.history
-                                : (
-                                    Array.isArray(parsed.data)
-                                        ? parsed.data
-                                        : []
-                                )
-                        );
-
-                const normalized =
-                    records
-                        .map(normalizeRecord)
-                        .filter(Boolean);
-
-                if (normalized.length > 0) {
-
-                    allData = normalized;
-                    loaded = true;
-
-                    break;
-                }
-
-            } catch (error) {
-
-                console.log(
-                    'Données historiques invalides pour :',
-                    key
-                );
-
-            }
-
-        }
-
-    }
-
-
-    applyFilters();
-
 }
 
 
