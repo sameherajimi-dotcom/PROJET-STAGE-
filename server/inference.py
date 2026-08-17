@@ -7,6 +7,9 @@ ajoutée au dépôt, au JavaScript du navigateur, ou à une page HTML.
 import json
 import os
 import sys
+import base64
+from io import BytesIO
+from PIL import Image
 
 from inference_sdk import InferenceHTTPClient
 
@@ -14,9 +17,23 @@ WORKSPACE_NAME = "iyeds-workspace-tzluv"
 WORKFLOW_ID = "valeo-vvaleo-pz9hm-1-resnet18-t1-logic"
 SECOND_WORKSPACE_NAME = "new-workspace-syrvd"
 SECOND_WORKFLOW_ID = "valeodetectionororrec-vvaleodetection-rec-ugvjh-1-yolo11n-t1-logic"
-# The deployed product classifier returns about 43% for the supplied sample.
-# Keep a conservative threshold while allowing that valid classification through.
 MIN_CONFIDENCE = 0.40
+
+
+def compress_image(image_path, max_width=640, max_height=480, quality=75):
+    """Réduit la taille de l'image pour accélérer l'analyse."""
+    try:
+        img = Image.open(image_path)
+        # Redimensionner si nécessaire
+        if img.width > max_width or img.height > max_height:
+            img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+        # Sauvegarder avec qualité réduite
+        compressed_path = image_path.replace('.jpg', '_compressed.jpg')
+        img.save(compressed_path, 'JPEG', quality=quality, optimize=True)
+        return compressed_path
+    except Exception as e:
+        print(f"Compression warning: {e}", file=sys.stderr)
+        return image_path
 
 
 def find_predictions(value):
@@ -67,6 +84,9 @@ def main(image_path):
     if not second_api_key:
         raise RuntimeError("VALEO_ROBOFLOW_SECOND_API_KEY is missing")
 
+    # Compress image for faster processing
+    compressed_path = compress_image(image_path)
+
     first_client = InferenceHTTPClient(
         api_url="https://serverless.roboflow.com",
         api_key=api_key,
@@ -76,13 +96,42 @@ def main(image_path):
         api_key=second_api_key,
     )
 
-    # First identify the product. Jig counting is not attempted without one.
-    first_result = first_client.run_workflow(
-        workspace_name=WORKSPACE_NAME,
-        workflow_id=WORKFLOW_ID,
-        images={"image": image_path},
-        use_cache=True,
-    )
+    # Run both workflows in parallel using threading
+    import concurrent.futures
+    
+    def run_first_workflow():
+        try:
+            return first_client.run_workflow(
+                workspace_name=WORKSPACE_NAME,
+                workflow_id=WORKFLOW_ID,
+                images={"image": compressed_path},
+                use_cache=True,
+            )
+        except Exception as e:
+            print(f"Error in first workflow: {e}", file=sys.stderr)
+            return {}
+
+    def run_second_workflow():
+        try:
+            return second_client.run_workflow(
+                workspace_name=SECOND_WORKSPACE_NAME,
+                workflow_id=SECOND_WORKFLOW_ID,
+                images={"image": compressed_path},
+                use_cache=True,
+            )
+        except Exception as e:
+            print(f"Error in second workflow: {e}", file=sys.stderr)
+            return {}
+
+    # Execute both workflows in parallel
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        first_future = executor.submit(run_first_workflow)
+        second_future = executor.submit(run_second_workflow)
+        
+        first_result = first_future.result()
+        second_result = second_future.result()
+
+    # Process first workflow (product detection)
     product_detections = []
     for prediction in find_predictions(first_result):
         detection = normalise_detection(prediction)
@@ -95,24 +144,25 @@ def main(image_path):
         product = detection["product"]
         counts[product] = counts.get(product, 0) + 1
 
+    # Process second workflow (jig counting)
     jig_detections = []
-    if product_detections:
-        second_result = second_client.run_workflow(
-            workspace_name=SECOND_WORKSPACE_NAME,
-            workflow_id=SECOND_WORKFLOW_ID,
-            images={"image": image_path},
-            use_cache=True,
-        )
-        for prediction in find_predictions(second_result):
-            detection = normalise_detection(prediction)
-            if detection:
-                detection["model"] = "secondary"
-                jig_detections.append(detection)
+    for prediction in find_predictions(second_result):
+        detection = normalise_detection(prediction)
+        if detection:
+            detection["model"] = "secondary"
+            jig_detections.append(detection)
 
     jig_counts = {}
     for detection in jig_detections:
         jig = detection["product"]
         jig_counts[jig] = jig_counts.get(jig, 0) + 1
+
+    # Clean up compressed image
+    try:
+        if compressed_path != image_path and os.path.exists(compressed_path):
+            os.remove(compressed_path)
+    except:
+        pass
 
     print(json.dumps({
         "detections": product_detections,

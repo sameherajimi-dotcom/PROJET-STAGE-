@@ -263,43 +263,67 @@
     .kpi-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
     }
 
     .kpi-card {
-        background: var(--card);
+        background: linear-gradient(135deg, rgba(185, 255, 0, 0.03) 0%, rgba(31, 64, 78, 0.02) 100%);
         border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 1.25rem 1.5rem;
+        border-radius: 16px;
+        padding: 1.75rem;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--valeo-lime), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
 
     .kpi-card:hover {
-        border-color: rgba(185, 255, 0, 0.15);
-        transform: translateY(-2px);
+        border-color: rgba(185, 255, 0, 0.25);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(185, 255, 0, 0.08);
+    }
+
+    .kpi-card:hover::before {
+        opacity: 1;
     }
 
     .kpi-card .kpi-label {
         color: var(--muted);
-        font-size: 0.72rem;
-        font-weight: 500;
+        font-size: 0.75rem;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.4rem;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.75rem;
+        opacity: 0.8;
     }
 
     .kpi-card .kpi-value {
-        font-size: 1.8rem;
-        font-weight: 700;
+        font-size: 2.2rem;
+        font-weight: 800;
         color: var(--text);
-        line-height: 1.1;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
     }
 
     .kpi-card .kpi-value.lime {
         color: var(--valeo-lime);
+        text-shadow: 0 0 20px rgba(185, 255, 0, 0.15);
     }
 
     .kpi-card .kpi-desc {
@@ -849,22 +873,12 @@
                 <div class="kpi-label">Quantité Totale</div>
                 <div class="kpi-value lime" id="val-total-target">0</div>
             </div>
-
-            <div class="kpi-desc">
-                <i class="fa-solid fa-boxes-stacked"></i>
-                Cible Excel du produit référencé
-            </div>
         </div>
 
         <div class="kpi-card">
             <div>
                 <div class="kpi-label">Quantité Détectée</div>
                 <div class="kpi-value" id="val-detected-qty">0</div>
-            </div>
-
-            <div class="kpi-desc">
-                <i class="fa-solid fa-camera"></i>
-                Pièces réellement capturées
             </div>
         </div>
 
@@ -873,34 +887,12 @@
                 <div class="kpi-label">Rendement</div>
                 <div class="kpi-value lime" id="val-yield">0%</div>
             </div>
-
-            <div class="kpi-desc">
-                <i class="fa-solid fa-percent"></i>
-                Quantité détectée / quantité totale
-            </div>
         </div>
 
         <div class="kpi-card">
             <div>
                 <div class="kpi-label">Chargement Total</div>
                 <div class="kpi-value" id="val-total-load">0%</div>
-            </div>
-
-            <div class="kpi-desc">
-                <i class="fa-solid fa-bolt"></i>
-                Charge globale de production
-            </div>
-        </div>
-
-        <div class="kpi-card">
-            <div>
-                <div class="kpi-label">Jigs / Kits Requis</div>
-                <div class="kpi-value lime" id="val-jigs-required">0 / 0</div>
-            </div>
-
-            <div class="kpi-desc">
-                <i class="fa-solid fa-warehouse"></i>
-                Référence base de données Excel
             </div>
         </div>
 
@@ -931,11 +923,10 @@
                         <thead>
 
                             <tr>
-                                <th>ID</th>
-                                <th>Date &amp; Heure</th>
+                                <th>ID / Date &amp; Heure</th>
                                 <th>Produit</th>
-                                <th>Détecté</th>
-                                <th>Totale</th>
+                                <th>Jigs Totales</th>
+                                <th>Jigs Détectées</th>
                                 <th>Rendement</th>
                             </tr>
 
@@ -1039,62 +1030,31 @@
 
                     </div>
 
+                </div>
 
-                    <!-- DETAILS -->
-                    <div class="sim-info-panel">
+                <!-- PRODUCT INFO -->
+                <div class="sim-info-panel" style="margin-top: 1rem;">
 
-                        <div class="sim-info-grid">
+                    <div class="sim-info-grid">
 
-                            <span class="sim-info-label">
-                                Dernier Scan ID:
-                            </span>
+                        <span class="sim-info-label">
+                            Nom de Produit Détecté:
+                        </span>
 
-                            <span class="sim-info-val"
-                                  id="info-scan-id">
-                                -
-                            </span>
-
-
-                            <span class="sim-info-label">
-                                Quantité Instantanée:
-                            </span>
-
-                            <span class="sim-info-val"
-                                  id="info-qty">
-                                -
-                            </span>
+                        <span class="sim-info-val"
+                              id="info-product-name">
+                            -
+                        </span>
 
 
-                            <span class="sim-info-label">
-                                Rendement Produit:
-                            </span>
+                        <span class="sim-info-label">
+                            Pourcentage Chargement:
+                        </span>
 
-                            <span class="sim-info-val"
-                                  id="info-rate">
-                                -
-                            </span>
-
-
-                            <span class="sim-info-label">
-                                Quantité Totale Réf.:
-                            </span>
-
-                            <span class="sim-info-val"
-                                  id="info-trp">
-                                -
-                            </span>
-
-
-                            <span class="sim-info-label">
-                                Statut Chargement:
-                            </span>
-
-                            <span class="sim-info-val"
-                                  id="info-status">
-                                -
-                            </span>
-
-                        </div>
+                        <span class="sim-info-val"
+                              id="info-load-percentage">
+                            -
+                        </span>
 
                     </div>
 
@@ -1102,34 +1062,6 @@
 
             </div>
 
-
-            <!-- CHART -->
-            <div class="panel">
-
-                <div class="panel-header">
-
-                    <div class="panel-title">
-                        <i class="fa-solid fa-chart-line"></i>
-                        Performance &amp; Volume
-                    </div>
-
-                </div>
-
-                <div class="panel-body">
-
-                    <div class="charts-grid">
-
-                        <div class="recency-graph">
-
-                            <canvas id="volumeChart"></canvas>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
 
         </div>
 
@@ -1175,20 +1107,12 @@
 
                 </div>
 
-
                 <!-- CAMERA -->
                 <div class="sim-control-group">
 
                     <span class="sim-info-label">
                         Caméra :
                     </span>
-
-                    <select id="camera-device-select"
-                            class="ctrl-btn"
-                            onchange="changeCameraDevice()"
-                            aria-label="Choisir la caméra">
-                        <option value="">Caméra par défaut</option>
-                    </select>
 
                     <button class="ctrl-btn ctrl-btn-lime"
                             onclick="toggleCamera(true)">
@@ -1251,6 +1175,49 @@
         width: 0,
         height: 0
     };
+
+    // ============================================================
+    // HARDCODED PRODUCTS DATABASE
+    // ============================================================
+
+    const productsDatabase = {
+        'SWEET 400': { jigsTotal: 18, famille: 'SWEET 400', kits: 11 },
+        '9B': { jigsTotal: 15, famille: 'X52 PUSH BAR', kits: 3 },
+        'XDD/7B': { jigsTotal: 15, famille: 'X52 PUSH BAR', kits: 4 },
+        '8B': { jigsTotal: 15, famille: 'X52 PUSH BAR', kits: 20 },
+        'FRAME': { jigsTotal: 15, famille: 'BEL', kits: 3 },
+        'MATE': { jigsTotal: 15, famille: 'BEL', kits: 7 },
+        'CMFB PUSH': { jigsTotal: 12, famille: 'CMFB-P', kits: 3 },
+        'DECOPART': { jigsTotal: 15, famille: 'CMFB-P', kits: 3 },
+        'D2CORATIVE FASCIA': { jigsTotal: 18, famille: 'OV512', kits: 1 },
+        'ADAS': { jigsTotal: 15, famille: 'OV512', kits: 8 },
+        'CAPACITIVE PLATE': { jigsTotal: 15, famille: 'OV512', kits: 4 },
+        'TOGGLE': { jigsTotal: 15, famille: 'OV512', kits: 3 },
+        'BEZEL': { jigsTotal: 10, famille: 'OV512', kits: 4 },
+        'CAPACITIVE DUMMY': { jigsTotal: 15, famille: 'OV512', kits: 4 },
+        'ON/OFF': { jigsTotal: 15, famille: 'OV512', kits: 20 },
+        'HAZARD = Warning': { jigsTotal: 18, famille: 'P674', kits: 12 },
+        'DECOR CAPA PUSH BLOCK': { jigsTotal: 10, famille: 'P674', kits: 4 },
+        'CAP CAPACITIVE': { jigsTotal: 10, famille: 'P674', kits: 4 },
+        'TCP': { jigsTotal: 10, famille: 'P674', kits: 6 },
+        'DECOR FASCIA MAIN LHD': { jigsTotal: 9, famille: 'P674', kits: 1 },
+        'E-TOGGLE': { jigsTotal: 15, famille: 'E-TOGGLE', kits: 12 },
+        'LJC': { jigsTotal: 15, famille: 'LJC', kits: 4 },
+        'X52 SQUARE': { jigsTotal: 15, famille: 'X52 SQUARE', kits: 2 },
+        'MFL': { jigsTotal: 15, famille: 'MFL', kits: 4 },
+        'HMI': { jigsTotal: 15, famille: 'HMI', kits: 4 }
+    };
+
+    // Helper to get product info
+    function getProductInfo(productName) {
+        const normalized = String(productName || '').trim().toUpperCase();
+        for (const [key, value] of Object.entries(productsDatabase)) {
+            if (key.toUpperCase() === normalized || normalized.includes(key.toUpperCase())) {
+                return value;
+            }
+        }
+        return { jigsTotal: 0, famille: 'Inconnu', kits: 0 };
+    }
 
     let scanCounter = 0;
 
@@ -1411,10 +1378,12 @@
 
                 const jigs = Number(row.jigs || row['Nombre jigs/balancelle'] || 0);
                 const kits = Number(row.kits || row['Nombre Kits / jigs'] || 0);
+                const jigs_totales = Number(row.jigs_totales || row.jigs || 0);
 
                 const canonical = {
                     produit,
                     quantite: Number(quantite) || 0,
+                    jigs_totales: Number(jigs_totales) || 0,
                     jigs: Number(jigs) || 0,
                     kits: Number(kits) || 0,
                     sheet: row.sheet || 'Excel'
@@ -1601,7 +1570,7 @@
 
             noSignal.style.display = 'none';
 
-            badge.textContent = 'IA active';
+            badge.textContent = 'Camera Activée';
 
             badge.className = 'badge badge-green';
 
@@ -1747,16 +1716,22 @@
         const yieldRate = totalTarget > 0 ? Math.round((totalDetected / totalTarget) * 100) : 0;
         const currentLoad = currentTarget > 0 ? Math.round((currentDetected / currentTarget) * 100) : 0;
 
-        document.getElementById('val-total-target').textContent = totalTarget || 0;
-        document.getElementById('val-detected-qty').textContent = totalDetected || 0;
-        document.getElementById('val-yield').textContent = `${yieldRate}%`;
-        document.getElementById('val-total-load').textContent = `${Math.min(100, yieldRate)}%`;
+        const totalTargetEl = document.getElementById('val-total-target');
+        const detectedQtyEl = document.getElementById('val-detected-qty');
+        const yieldEl = document.getElementById('val-yield');
+        const totalLoadEl = document.getElementById('val-total-load');
+        const jigsRequiredEl = document.getElementById('val-jigs-required');
+        const activeProductEl = document.getElementById('val-active-product');
+
+        if (totalTargetEl) totalTargetEl.textContent = totalTarget || 0;
+        if (detectedQtyEl) detectedQtyEl.textContent = totalDetected || 0;
+        if (yieldEl) yieldEl.textContent = `${yieldRate}%`;
+        if (totalLoadEl) totalLoadEl.textContent = `${Math.min(100, yieldRate)}%`;
 
         const jigs = referenceEntry?.jigs || 0;
         const kits = referenceEntry?.kits || 0;
-        document.getElementById('val-jigs-required').textContent = `${jigs || 0} / ${kits || 0}`;
-
-        document.getElementById('val-active-product').textContent = latestProduct;
+        if (jigsRequiredEl) jigsRequiredEl.textContent = `${jigs || 0} / ${kits || 0}`;
+        if (activeProductEl) activeProductEl.textContent = latestProduct;
 
         const infoQty = document.getElementById('info-qty');
         if (infoQty) infoQty.textContent = `${currentDetected || 0} pièce(s)`;
@@ -2017,18 +1992,34 @@
 
     function recordDetections(counts, detections) {
 
+        console.log('📋 recordDetections called with counts:', counts);
+
         const now = new Date();
 
         Object.entries(counts).forEach(([product, quantity]) => {
+            console.log(`Processing product: ${product}, quantity: ${quantity}`);
+            
+            const productInfo = getProductInfo(product);
+            console.log(`Product info:`, productInfo);
+
             window.productTotals[product] = (window.productTotals[product] || 0) + quantity;
 
-            const existingIndex = readings.findIndex(r => String(r.produit || '').trim() === product);
+            const existingIndex = readings.findIndex(r => String(r.produit || '').trim().toUpperCase() === String(product || '').trim().toUpperCase());
+            
             if (existingIndex !== -1) {
+                console.log(`Product already in table at index ${existingIndex}, updating...`);
                 readings[existingIndex].quantite += quantity;
                 readings[existingIndex].quantite_totale = (readings[existingIndex].quantite_totale || 0) + quantity;
+                readings[existingIndex].jigs_totales = productInfo.jigsTotal;
                 readings[existingIndex].date = now.toLocaleDateString('fr-FR');
                 readings[existingIndex].heure = now.toLocaleTimeString('fr-FR');
                 readings[existingIndex].taux = `${Math.min(100, Math.max(0, readings[existingIndex].quantite))}%`;
+                
+                // Update the row in DOM
+                const tbody = document.getElementById('readings-table-body');
+                if (tbody && existingIndex < tbody.children.length) {
+                    insertRow(readings[existingIndex], false);
+                }
                 return;
             }
 
@@ -2039,9 +2030,11 @@
                 produit: product,
                 quantite: quantity,
                 quantite_totale: window.productTotals[product],
+                jigs_totales: productInfo.jigsTotal,
                 taux: `${quantity}`
             };
 
+            console.log(`Adding new row:`, reading);
             readings.unshift(reading);
             insertRow(reading, true);
         });
@@ -2051,9 +2044,46 @@
         rebuildTableTRP();
         calculateStats();
         updateChart();
+        console.log('✓ recordDetections complete, readings count:', readings.length);
 
     }
 
+    // ============================================================
+    // TEST DETECTION (For debugging - call via browser console)
+    // ============================================================
+
+    window.testDetection = async function() {
+        console.log('🧪 Testing detection system...');
+        try {
+            // Use a real product from the database
+            const testProducts = Object.keys(productsDatabase);
+            const randomProduct = testProducts[Math.floor(Math.random() * testProducts.length)];
+            const testCount = 5;
+            
+            console.log(`✓ Test product: ${randomProduct}`);
+            
+            // Create test detection data
+            const testData = {
+                success: true,
+                capture: 'test-capture.jpg',
+                detections: [{
+                    product: randomProduct,
+                    confidence: 0.95
+                }],
+                counts: { [randomProduct]: testCount },
+                jig_detections: [],
+                jig_count: 0,
+                test: true
+            };
+            
+            console.log('Test data:', testData);
+            console.log('✓ Adding to table...');
+            recordDetections(testData.counts, testData.detections);
+            console.log('✓ Test complete! Check the table.');
+        } catch (error) {
+            console.error('✗ Test error:', error);
+        }
+    };
 
     // ============================================================
     // SENSOR TRIGGER
@@ -2140,6 +2170,7 @@
             const data =
                 await response.json();
 
+            console.log('Detection response:', data);
 
             if (!data.success) {
 
@@ -2155,6 +2186,9 @@
                 data.detections || [];
             const jigDetections =
                 data.jig_detections || [];
+
+            console.log('Detections:', detections);
+            console.log('Counts:', data.counts);
 
 
             // Display detection boxes
@@ -2187,65 +2221,55 @@
                 'Aucun produit >= 40%';
 
 
+            // Get the first detected product
+            const detectedProducts = Object.keys(data.counts || {});
+            const firstProduct = detectedProducts.length > 0 ? detectedProducts[0] : null;
+            const detectedQuantity = firstProduct ? (data.counts[firstProduct] || 0) : 0;
+
+            // Display product name below camera
+            const productNameEl = document.getElementById('info-product-name');
+            if (productNameEl) {
+                productNameEl.textContent = firstProduct || '-';
+            }
+
+            // Calculate and display loading percentage
+            const loadPercentageEl = document.getElementById('info-load-percentage');
+            if (loadPercentageEl && firstProduct) {
+                const refRow = findReferenceForProduct(firstProduct) || window.baseReference?.[firstProduct] || null;
+                const jigsTotal = Number(refRow?.jigs_totales || refRow?.jigs || 0);
+                const loadPercent = jigsTotal > 0 ? Math.min(100, Math.round((detectedQuantity / jigsTotal) * 100)) : 0;
+                loadPercentageEl.textContent = `${loadPercent}%`;
+            } else if (loadPercentageEl) {
+                loadPercentageEl.textContent = '-';
+            }
+
             // Record results
 
-            if (detections.length) {
+            if (detections.length || Object.keys(data.counts || {}).length > 0) {
 
                 recordDetections(
                     data.counts,
                     detections
                 );
 
+            } else {
+                // If no detections but photo was taken, create an entry showing no product detected
+                const now = new Date();
+                const reading = {
+                    id: `VAL-${String(++scanCounter).padStart(4, '0')}`,
+                    date: now.toLocaleDateString('fr-FR'),
+                    heure: now.toLocaleTimeString('fr-FR'),
+                    produit: 'Aucun produit détecté',
+                    quantite: 0,
+                    quantite_totale: 0,
+                    jigs_totales: 0,
+                    taux: '0%'
+                };
+                readings.unshift(reading);
+                insertRow(reading, true);
+                calculateStats();
             }
 
-
-            // Scan ID
-
-            document.getElementById(
-                'info-scan-id'
-            ).textContent =
-
-                detections.length
-                    ? `#VAL-${String(scanCounter).padStart(4, '0')}`
-                    : '-';
-
-
-            // Quantity
-
-            const capturedQuantity =
-                getCapturedQuantityFromCountMap(
-                    data.counts || {}
-                );
-
-            document.getElementById(
-                'info-qty'
-            ).textContent =
-                capturedQuantity
-                    ? `${capturedQuantity} pièce(s)`
-                    : '0 pièce';
-
-
-            // Captured quantity in the photo
-
-            document.getElementById(
-                'info-rate'
-            ).textContent =
-                capturedQuantity
-                    ? `${capturedQuantity}`
-                    : '-';
-
-
-            // Status
-
-            document.getElementById(
-                'info-status'
-            ).innerHTML =
-
-                detections.length
-
-                    ? '<span class="badge badge-green">DÉTECTÉ</span>'
-
-                    : '<span class="badge badge-amber">AUCUN PRODUIT</span>';
 
 
         } catch (error) {
@@ -2262,17 +2286,11 @@
                 `ERREUR IA: ${error.message}`;
 
 
-            document.getElementById(
-                'info-status'
-            ).innerHTML =
-                '<span class="badge badge-red">ERREUR</span>';
-
-
         } finally {
 
-            // Keep the captured image and analysis visible for a moment before
+            // Keep the captured image and analysis visible for 2 seconds before
             // automatically reactivating the camera for the next detection.
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             await resumeCameraPreview();
 
             detectionInProgress = false;
@@ -2417,9 +2435,8 @@
 
 
         const trackedQty = Number(r.quantite || 0);
-        const refRow = findReferenceForProduct(r.produit) || window.baseReference?.[r.produit] || null;
-        const totalRef = Number(refRow?.quantite || 0);
-        const rateVal = totalRef > 0 ? Math.min(100, Math.round((trackedQty / totalRef) * 100)) : 0;
+        const jigsTotal = Number(r.jigs_totales || 0) || getProductInfo(r.produit).jigsTotal;
+        const rateVal = jigsTotal > 0 ? Math.min(100, Math.round((trackedQty / jigsTotal) * 100)) : 0;
 
         let badgeClass = 'badge-lime';
 
@@ -2439,11 +2456,8 @@
         tr.innerHTML = `
 
             <td>
-                <strong>#${r.id}</strong>
-            </td>
-
-            <td>
-                ${r.date} ${r.heure}
+                <strong>#${r.id}</strong><br>
+                <span style="font-size: 0.85rem; color: var(--muted);">${r.date} ${r.heure}</span>
             </td>
 
             <td>
@@ -2464,11 +2478,11 @@
             </td>
 
             <td>
-                ${trackedQty}
+                ${jigsTotal || 0}
             </td>
 
             <td>
-                ${totalRef || 0}
+                ${trackedQty}
             </td>
 
             <td>
@@ -2610,16 +2624,10 @@
 
             try {
 
-                const selectedDeviceId = document.getElementById('camera-device-select').value;
-                selectedCameraId = selectedDeviceId;
-
                 mediaStream =
                     await navigator.mediaDevices.getUserMedia({
 
                         video: {
-                            ...(selectedDeviceId ? {
-                                deviceId: { exact: selectedDeviceId }
-                            } : {}),
                             width: {
                                 ideal: 1280
                             },
