@@ -36,9 +36,6 @@ const HISTORY_FILE = path.join(__dirname, 'history.json');
 process.env.VALEO_ROBOFLOW_API_KEY =
     process.env.VALEO_ROBOFLOW_API_KEY || 'dQudu2taTYXhZN8DmqZo';
 
-process.env.VALEO_ROBOFLOW_SECOND_API_KEY =
-    process.env.VALEO_ROBOFLOW_SECOND_API_KEY || 'KeCJQZgmePtugUhbMNTC';
-
 const BASE_DATA_PATH =
     process.env.VALEO_BASE_DATA_PATH ||
     path.join(
@@ -421,12 +418,19 @@ app.post('/api/history', async (req, res) => {
             quantite_totale: normalizeNumeric(record.quantite),
             chargement_total: normalizeNumeric(record.quantite),
             jigs_totales: normalizeNumeric(record.jigs_totales),
-            rendement: normalizeNumeric(String(record.taux || '0').replace('%', '').replace(',', '.')),
+            rendement: normalizeNumeric(
+                String(record.taux || '0')
+                    .replace('%', '')
+                    .replace(',', '.')
+            ),
             taux: record.taux || '0%'
         };
 
         history.unshift(newRecord);
-        await writeHistoryFile(history.slice(0, 10000));
+
+        await writeHistoryFile(
+            history.slice(0, 10000)
+        );
 
         res.json({
             success: true,
@@ -668,7 +672,7 @@ app.post('/api/detect', async (req, res) => {
         }
     } catch (error) {
         console.error(
-            'Roboflow inference error:',
+            'Inference error:',
             error.message
         );
 
@@ -1200,7 +1204,7 @@ app.get('*', (req, res) => {
         path.join(
             __dirname,
             '..',
-            'login.html'
+            'loading.html'
         )
     );
 });

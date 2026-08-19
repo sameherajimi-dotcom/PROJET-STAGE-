@@ -1,5 +1,19 @@
 [
   {
+    "id": "VAL-1787135815533-EKJOHC",
+    "date": "19/08/2026",
+    "heure": "11:36:55",
+    "timestamp": "2026-08-19T10:36:55.533Z",
+    "produit": "BEZEL",
+    "famille": "—",
+    "quantite": 1,
+    "quantite_totale": 1,
+    "chargement_total": 1,
+    "jigs_totales": 0,
+    "rendement": 0,
+    "taux": "0%"
+  },
+  {
     "id": "VAL-1787131171985-IM2B12",
     "date": "19/08/2026",
     "heure": "10:19:31",
