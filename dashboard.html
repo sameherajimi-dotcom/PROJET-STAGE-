@@ -1252,6 +1252,7 @@
 
     let cameraActive = false;
     let detectionInProgress = false;
+    let importedImageData = null;
     let analysisTimer = null;
     let isAnalyzing = false;
     let currentProductName = null; // Produit actuellement affiché dans le tableau
@@ -1323,6 +1324,20 @@
 
             }
         );
+
+    }
+
+
+    // Nettoie uniquement les cadres temporaires de détection.
+    // Les résultats/statistiques restent affichés.
+    function clearDetectionBoxes() {
+
+        const overlay =
+            document.getElementById('detection-overlay');
+
+        if (overlay) {
+            overlay.innerHTML = '';
+        }
 
     }
 
@@ -3509,6 +3524,9 @@
             ]
         );
 
+        // Les cadres sont temporaires : ils seront nettoyés après affichage du résultat.
+        setTimeout(clearDetectionBoxes, 1500);
+
 
         const countText =
             Object.entries(
@@ -3727,189 +3745,44 @@
     // ============================================================
 
     async function importPhoto(event) {
-
-        const file =
-            event.target.files[0];
-
-
-        if (!file) {
-            return;
-        }
-
-
-        const reader =
-            new FileReader();
-
-
-        const button =
-            document.getElementById(
-                'sensor-trigger-btn'
-            );
-
-
-        if (button) {
-
-            button.disabled =
-                true;
-
-
-            button.innerHTML =
-                '<i class="fa-solid fa-spinner fa-spin"></i> Analyse...';
-
-        }
-
-
-        document.getElementById(
-            'cam-stats-overlay'
-        ).textContent =
-            '📷 Analyse image importée...';
-
-
-        reader.onload =
-            async function(
-                e
-            ) {
-
-                const imageData =
-                    e.target.result;
-
-
-                let imageWidth =
-                    0;
-
-
-                let imageHeight =
-                    0;
-
-
-                try {
-
-                    const dimensions =
-                        await getImageDimensions(
-                            imageData
-                        );
-
-
-                    imageWidth =
-                        dimensions.width;
-
-
-                    imageHeight =
-                        dimensions.height;
-
-
-                    lastFrameSize =
-                        {
-                            width: imageWidth,
-                            height: imageHeight
-                        };
-
-                } catch (err) {
-
-                    console.warn(
-                        'Impossible de lire les dimensions de l\'image importée:',
-                        err
-                    );
-
-                }
-
-
-                const previewImg =
-                    document.getElementById(
-                        'imported-photo-preview'
-                    );
-
-
-                if (previewImg) {
-
-                    previewImg.src =
-                        imageData;
-
-
-                    previewImg.style.display =
-                        'block';
-
-                }
-
-
-                try {
-
-                    const response =
-                        await fetch(
-                            '/api/detect',
-                            {
-
-                                method:
-                                    'POST',
-
-                                headers:
-                                    {
-                                        'Content-Type':
-                                            'application/json'
-                                    },
-
-                                body:
-                                    JSON.stringify(
-                                        {
-                                            image:
-                                                imageData
-                                        }
-                                    )
-
-                            }
-                        );
-
-
-                    const data =
-                        await response.json();
-
-
-                    await processDetectionResponse(
-                        data
-                    );
-
-
-                } catch (error) {
-
-                    console.error(
-                        'Erreur analyse image:',
-                        error
-                    );
-
-
-                    document.getElementById(
-                        'cam-stats-overlay'
-                    ).textContent =
-                        `ERREUR IA: ${error.message}`;
-
-                } finally {
-
-                    if (button) {
-
-                        button.disabled =
-                            false;
-
-
-                        button.innerHTML =
-                            '<i class="fa-solid fa-radar"></i> Déclencher la détection';
-
-                    }
-
-
-                    event.target.value =
-                        '';
-
-                }
-
-            };
-
-
-        reader.readAsDataURL(
-            file
-        );
-
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = async function(e) {
+            const imageData = e.target.result;
+            importedImageData = imageData;
+
+            try {
+                const dimensions = await getImageDimensions(imageData);
+                lastFrameSize = { width: dimensions.width, height: dimensions.height };
+            } catch (err) {
+                console.warn('Dimensions image importée indisponibles:', err);
+            }
+
+            clearDetectionBoxes();
+
+            const previewImg = document.getElementById('imported-photo-preview');
+            const video = document.getElementById('camera-video');
+            const noSignal = document.getElementById('no-signal-overlay');
+
+            if (video) video.style.display = 'none';
+            if (noSignal) noSignal.style.display = 'none';
+            if (previewImg) {
+                previewImg.src = imageData;
+                previewImg.style.display = 'block';
+            }
+
+            const stats = document.getElementById('cam-stats-overlay');
+            if (stats) stats.textContent = '📁 Image importée — appuyez sur « Déclencher la détection »';
+
+            // IMPORTANT : aucune détection automatique ici.
+            event.target.value = '';
+        };
+
+        reader.readAsDataURL(file);
     }
-
 
     // ============================================================
     // RECORD DETECTIONS
@@ -4492,26 +4365,30 @@
 
     async function triggerSensor() {
 
-        if (!cameraActive) {
-
-            alert(
-                'Veuillez d’abord activer la caméra.'
-            );
-
-            return;
-
-        }
-
-
         if (detectionInProgress) {
-
             return;
-
         }
 
+        // Une image importée est prioritaire et peut être analysée
+        // même si la caméra est inactive.
+        let frame = importedImageData;
+        const usingImportedImage = !!frame;
 
-        const frame =
-            captureFrame();
+        if (!frame) {
+            if (!cameraActive) {
+                alert('Veuillez d’abord activer la caméra ou importer une image.');
+                return;
+            }
+
+            frame = captureFrame();
+
+            if (!frame) {
+                alert('Impossible de capturer l’image. La caméra n’est pas prête.');
+                return;
+            }
+
+            freezeCapturedFrame();
+        }
 
 
         if (!frame) {
@@ -4523,11 +4400,6 @@
             return;
 
         }
-
-
-        // Freeze the preview on the exact frame
-        // submitted to the AI.
-        freezeCapturedFrame();
 
 
         const button =
@@ -4544,19 +4416,9 @@
             '<i class="fa-solid fa-spinner fa-spin"></i> Capture...';
 
 
-        const previewImg =
-            document.getElementById(
-                'imported-photo-preview'
-            );
-
-
-        if (previewImg) {
-
-            previewImg.style.display =
-                'none';
-
-        }
-
+        // Ne pas masquer l'image importée pendant sa détection.
+        // Elle reste la source visuelle jusqu'à un nouvel import ou
+        // jusqu'à l'activation de la caméra.
 
         try {
 
@@ -4626,8 +4488,12 @@
             );
 
 
-            // Réactiver automatiquement la caméra pour la capture suivante
-            await resumeCameraPreview();
+            // Si la détection concernait une image importée,
+            // ne pas réactiver automatiquement la caméra.
+            // Le LIVE ne reprend que lorsque l'utilisateur appuie sur ACTIVER.
+            if (!usingImportedImage) {
+                await resumeCameraPreview();
+            }
 
 
             detectionInProgress =
@@ -5287,6 +5153,20 @@
             state &&
             mediaStream
         ) {
+
+            const previewImg = document.getElementById('imported-photo-preview');
+            const noSignal = document.getElementById('no-signal-overlay');
+            const overlay = document.getElementById('detection-overlay');
+
+            if (previewImg) {
+                previewImg.src = '';
+                previewImg.style.display = 'none';
+            }
+
+            importedImageData = null;
+            if (overlay) overlay.innerHTML = '';
+            if (noSignal) noSignal.style.display = 'none';
+            video.style.display = 'block';
 
             await video.play();
 
