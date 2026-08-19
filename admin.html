@@ -147,9 +147,14 @@
              <a href="live.html" class="nav-link"><i class="fa-solid fa-video"></i> Session Live</a>
              <a href="admin.html" class="nav-link active"><i class="fa-solid fa-shield-halved"></i> Admin</a>
          </nav>
-         <div class="header-user">
-             <span class="user-email" id="userDisplay"></span>
-             <button class="account-btn" id="accountBtn" title="Mon compte"><i class="fa-regular fa-circle-user"></i></button>
+        <div class="header-user">
+            <span class="user-email" id="userDisplay"></span>
+            <!-- Camera live indicator (shared across all pages) -->
+            <span id="global-cam-indicator" style="display:inline-flex;align-items:center;gap:0.5rem;font-size:0.8rem;padding-left:1rem;">
+                <i class="fa-solid fa-circle" style="color:#ff4444;font-size:8px;"></i>
+                <span id="globalCamText">Caméra OFF</span>
+            </span>
+            <button class="account-btn" id="accountBtn" title="Mon compte"><i class="fa-regular fa-circle-user"></i></button>
              <div class="account-dropdown" id="accountDropdown">
                  <div class="dropdown-userinfo">
                      <div class="name" id="dropdownName">Utilisateur</div>
@@ -310,6 +315,6 @@
              });
          }
      </script>
-     <script src="js/api.js"></script>
- </body>
- </html>
+      <script src="js/api.js"></script>
+  </body>
+  </html>

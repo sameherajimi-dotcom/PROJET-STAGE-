@@ -103,13 +103,36 @@ def normalize_detection(prediction, min_confidence):
     if not label:
         return None
 
+    # Extraire les coordonnées avec gestion des formats Roboflow
+    x = prediction.get("x")
+    y = prediction.get("y")
+    width = prediction.get("width")
+    height = prediction.get("height")
+
+    # Certains workflows Roboflow renvoient des coordonnées dans "detection_box"
+    if x is None and "detection_box" in prediction:
+        box = prediction["detection_box"]
+        x = box.get("x")
+        y = box.get("y")
+        width = box.get("width")
+        height = box.get("height")
+
+    # Convertir en float si possible
+    try:
+        x = float(x) if x is not None else None
+        y = float(y) if y is not None else None
+        width = float(width) if width is not None else None
+        height = float(height) if height is not None else None
+    except (TypeError, ValueError):
+        pass
+
     return {
         "product": str(label),
         "confidence": confidence,
-        "x": prediction.get("x"),
-        "y": prediction.get("y"),
-        "width": prediction.get("width"),
-        "height": prediction.get("height")
+        "x": x,
+        "y": y,
+        "width": width,
+        "height": height
     }
 
 
@@ -134,35 +157,30 @@ def main(image_path):
         api_key=second_api_key
     )
 
-    def run_first_workflow():
-        try:
-            return first_client.run_workflow(
-                workspace_name=WORKSPACE_NAME,
-                workflow_id=WORKFLOW_ID,
-                images={"image": compressed_path},
-                use_cache=True
-            )
-        except Exception as e:
-            print(f"Error in first workflow: {e}", file=sys.stderr)
-            return {}
+    # ========================================================
+    # EXECUTION EN SERIE : MODELE 1 PUIS MODELE 2
+    # ========================================================
+    try:
+        first_result = first_client.run_workflow(
+            workspace_name=WORKSPACE_NAME,
+            workflow_id=WORKFLOW_ID,
+            images={"image": compressed_path},
+            use_cache=True
+        )
+    except Exception as e:
+        print(f"Error in first workflow: {e}", file=sys.stderr)
+        first_result = {}
 
-    def run_second_workflow():
-        try:
-            return second_client.run_workflow(
-                workspace_name=SECOND_WORKSPACE_NAME,
-                workflow_id=SECOND_WORKFLOW_ID,
-                images={"image": image_path},
-                use_cache=False
-            )
-        except Exception as e:
-            print(f"Error in second workflow: {e}", file=sys.stderr)
-            return {}
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        first_future = executor.submit(run_first_workflow)
-        second_future = executor.submit(run_second_workflow)
-        first_result = first_future.result()
-        second_result = second_future.result()
+    try:
+        second_result = second_client.run_workflow(
+            workspace_name=SECOND_WORKSPACE_NAME,
+            workflow_id=SECOND_WORKFLOW_ID,
+            images={"image": image_path},
+            use_cache=False
+        )
+    except Exception as e:
+        print(f"Error in second workflow: {e}", file=sys.stderr)
+        second_result = {}
 
     # ========================================================
     # MODELE 1 - PRODUITS

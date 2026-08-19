@@ -397,6 +397,55 @@ app.get('/api/history', async (req, res) => {
     }
 });
 
+app.post('/api/history', async (req, res) => {
+    try {
+        const record = req.body;
+
+        if (!record || !record.produit) {
+            return res.status(400).json({
+                success: false,
+                message: 'Produit requis.'
+            });
+        }
+
+        const history = await readHistoryFile();
+
+        const newRecord = {
+            id: `VAL-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+            date: new Date().toLocaleDateString('fr-FR'),
+            heure: new Date().toLocaleTimeString('fr-FR'),
+            timestamp: new Date().toISOString(),
+            produit: String(record.produit || '').trim(),
+            famille: record.famille || '—',
+            quantite: normalizeNumeric(record.quantite),
+            quantite_totale: normalizeNumeric(record.quantite),
+            chargement_total: normalizeNumeric(record.quantite),
+            jigs_totales: normalizeNumeric(record.jigs_totales),
+            rendement: normalizeNumeric(String(record.taux || '0').replace('%', '').replace(',', '.')),
+            taux: record.taux || '0%'
+        };
+
+        history.unshift(newRecord);
+        await writeHistoryFile(history.slice(0, 10000));
+
+        res.json({
+            success: true,
+            record: newRecord
+        });
+    } catch (error) {
+        console.error(
+            'Erreur API historique POST:',
+            error.message
+        );
+
+        res.status(500).json({
+            success: false,
+            message:
+                'Impossible de sauvegarder dans l\'historique.'
+        });
+    }
+});
+
 app.get('/api/base-donnees', (req, res) => {
     try {
         const rows =
@@ -575,7 +624,7 @@ app.post('/api/detect', async (req, res) => {
                         imagePath
                     ],
                     {
-                        timeout: 10000,
+                        timeout: 60000,
                         maxBuffer:
                             2 * 1024 * 1024,
                         env:

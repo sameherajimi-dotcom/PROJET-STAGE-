@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Session Live - Valeo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -80,7 +80,7 @@
             white-space: nowrap; cursor: pointer;
         }
         .nav-link:hover { color: var(--text); background: var(--input); }
-.nav-link.active { background: var(--valeo-lime); color: var(--background); font-weight: 700; }
+        .nav-link.active { background: var(--valeo-lime); color: var(--background); font-weight: 700; }
 
         .account-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 1rem; flex-shrink:0; }
         .account-btn:hover { border-color: var(--valeo-lime); color: var(--valeo-lime); background: rgba(185,255,0,0.05); }
@@ -98,7 +98,7 @@
         .main-content {
             position: relative; z-index: 1;
             flex: 1; padding: 1.5rem 2rem;
-            max-width: 1400px; margin: 0 auto; width: 100%;
+            max-width: 1700px; margin: 0 auto; width: 100%;
             display: flex; flex-direction: column; gap: 1.5rem;
         }
 
@@ -121,98 +121,9 @@
         .badge-red { background: rgba(255, 68, 68, 0.12); color: var(--accent-red); border: 1px solid rgba(255, 68, 68, 0.25); }
         .badge-lime { background: rgba(185, 255, 0, 0.12); color: var(--valeo-lime); border: 1px solid rgba(185, 255, 0, 0.25); }
 
-        .card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 14px; padding: 1.25rem 1.5rem;
-            display: flex; flex-direction: column; justify-content: space-between;
-            transition: all 0.3s ease; min-height: 140px;
-        }
-        .card-title { color: var(--muted); font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
-        .card-value { font-size: 1.2rem; font-weight: 700; color: var(--text); line-height: 1.1; }
-        .card-desc { font-size: 0.72rem; color: var(--muted); margin-top: 0.5rem; }
-
-        .ctrl-btn {
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            padding: 0.5rem 1.25rem; border-radius: 8px;
-            border: 1px solid transparent; cursor: pointer;
-            font-size: 0.85rem; font-family: 'Inter', sans-serif;
-            font-weight: 600; transition: all 0.2s;
-        }
-        .ctrl-btn-green { background: rgba(0, 204, 102, 0.15); color: var(--accent-green); border-color: rgba(0, 204, 102, 0.3); }
-        .ctrl-btn-green:hover { background: rgba(0, 204, 102, 0.25); transform: translateY(-1px); }
-        .ctrl-btn-red { background: rgba(255, 68, 68, 0.12); color: var(--accent-red); border-color: rgba(255, 68, 68, 0.25); }
-        .ctrl-btn-red:hover { background: rgba(255, 68, 68, 0.22); transform: translateY(-1px); }
-
-        .live-layout {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 1.25rem;
-            align-items: start;
-        }
-
-        .live-stream-frame {
-            background: linear-gradient(135deg, rgba(8, 10, 11, 0.95), rgba(16, 19, 20, 0.95));
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            min-height: 480px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .live-stream-frame video {
-            width: 100%;
-            height: 100%;
-            display: block;
-            object-fit: contain;
-            transform: scaleX(-1);
-        }
-
-        .live-stream-frame .placeholder {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            color: var(--muted);
-            background: rgba(8, 10, 11, 0.9);
-        }
-
-        .live-stream-frame .placeholder i { font-size: 3rem; }
-        .live-stream-frame .placeholder span { font-family: monospace; font-size: 0.9rem; }
-
-        .live-stream-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 0.75rem;
-            color: var(--muted);
-            font-size: 0.875rem;
-            margin-top: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-        .live-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .camera-controls {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            margin-top: 1rem;
-        }
-
         .status-dot {
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 10px; height: 10px;
             border-radius: 50%;
             background: var(--accent-red);
             margin-right: 6px;
@@ -225,36 +136,231 @@
             50% { opacity: 0.3; }
         }
 
-        .app-footer {
+        .live-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .live-monitor-frame {
+            background: #050607;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            aspect-ratio: 4 / 3;
             position: relative;
-            z-index: 1;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        .live-monitor-frame video {
+            width: 100%; height: 100%;
+            display: block;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .live-monitor-frame .no-signal {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: var(--muted);
+            background: rgba(5, 6, 7, 0.92);
+            z-index: 5;
+        }
+
+        .live-monitor-frame .no-signal i { font-size: 2.5rem; }
+        .live-monitor-frame .no-signal span { font-family: monospace; font-size: 0.875rem; }
+
+        .live-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .live-overlay-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--accent-red);
+            font-family: monospace;
+            font-size: 0.68rem;
+            font-weight: bold;
+            text-shadow: 0 0 4px rgba(255, 68, 68, 0.5);
+        }
+
+        .live-overlay-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .live-overlay-footer span {
+            color: var(--text);
+            font-family: monospace;
+            font-size: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .live-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .live-sidebar-card {
+            background: linear-gradient(135deg, rgba(185, 255, 0, 0.03), rgba(31, 64, 78, 0.02));
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .live-sidebar-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--valeo-lime), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .live-sidebar-card:hover::before {
+            opacity: 1;
+        }
+
+        .live-sidebar-card:hover {
+            border-color: rgba(185, 255, 0, 0.18);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        }
+
+        .live-sidebar-card .label {
+            color: var(--muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .live-sidebar-card .label i {
+            color: var(--valeo-lime);
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+
+        .live-sidebar-card .value {
+            color: var(--text);
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .live-sidebar-card .value.lime { color: var(--valeo-lime); text-shadow: 0 0 18px rgba(185, 255, 0, 0.12); }
+        .live-sidebar-card .value.green { color: var(--accent-green); }
+        .live-sidebar-card .value.red { color: var(--accent-red); }
+
+        .live-controls {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .ctrl-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.5rem;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+
+        .ctrl-btn-green {
+            background: rgba(0, 204, 102, 0.15);
+            color: var(--accent-green);
+            border-color: rgba(0, 204, 102, 0.3);
+        }
+        .ctrl-btn-green:hover {
+            background: rgba(0, 204, 102, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 204, 102, 0.15);
+        }
+
+        .ctrl-btn-red {
+            background: rgba(255, 68, 68, 0.12);
+            color: var(--accent-red);
+            border-color: rgba(255, 68, 68, 0.25);
+        }
+        .ctrl-btn-red:hover {
+            background: rgba(255, 68, 68, 0.22);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.15);
+        }
+
+        .ctrl-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .app-footer {
+            position: relative; z-index: 1;
             background: var(--card);
             border-top: 1px solid var(--border);
             padding: 0.75rem 2rem;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.75rem;
-            color: var(--muted);
-            flex-wrap: wrap;
-            gap: 0.5rem;
+            justify-content: space-between; align-items: center;
+            font-size: 0.75rem; color: var(--muted);
+            flex-wrap: wrap; gap: 0.5rem;
             margin-top: auto;
         }
+        .app-footer a { color: var(--valeo-lime); text-decoration: none; }
+        .app-footer a:hover { text-decoration: underline; }
 
-        .app-footer a {
-            color: var(--valeo-lime);
-            text-decoration: none;
-        }
-        .app-footer a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 1100px) {
+        @media (max-width: 1024px) {
             .live-layout { grid-template-columns: 1fr; }
+            .live-monitor-frame { aspect-ratio: 16 / 9; }
         }
+
         @media (max-width: 768px) {
             header { flex-direction: column; padding: 0.875rem 1rem; }
             .main-content { padding: 1rem; }
+            .live-sidebar-card .value { font-size: 1.35rem; }
         }
     </style>
 </head>
@@ -300,58 +406,50 @@
         <div class="panel">
             <div class="panel-header">
                 <div class="panel-title">
-                    <i class="fa-solid fa-video"></i> Session Live Caméra
+                    <i class="fa-solid fa-video"></i> Suivi Ligne de Peinture
                 </div>
-                <span id="cam-status-badge" class="badge badge-red"><span class="status-dot" id="cam-status-dot"></span> Caméra désactivée</span>
+                <span id="cam-status-badge" class="badge badge-red"><span class="status-dot" id="cam-status-dot"></span> <span id="cam-status-text">Caméra inactive</span></span>
             </div>
             <div class="panel-body">
                 <div class="live-layout">
-                    <div class="live-stream-card">
-                        <div class="live-stream-frame" id="live-frame">
-                            <video id="videoElement" autoplay playsinline style="display:none;"></video>
-                            <div class="placeholder" id="placeholder">
-                                <i class="fa-solid fa-video-slash"></i>
-                                <span>CAMÉRA ÉTEINTE</span>
-                                <span style="font-size:0.75rem;">Cliquez sur "Activer" pour démarrer le flux</span>
-                            </div>
+                    <div class="live-monitor-frame" id="live-frame">
+                        <video id="videoElement" autoplay playsinline muted style="display:none;"></video>
+                        <div class="no-signal" id="no-signal">
+                            <i class="fa-solid fa-video-slash"></i>
+                            <span>CHARGEMENT CAMERA...</span>
                         </div>
-                        <div class="live-stream-footer">
-                            <span><i class="fa-solid fa-circle" style="color: var(--accent-red);"></i> <span id="cam-label">Caméra éteinte</span></span>
-                            <span id="cam-resolution">-</span>
+                        <div class="live-overlay">
+                            <div class="live-overlay-header">
+                                <span>CAM-01 // VALEO_SYS</span>
+                                <span id="cam-rec-indicator">
+                                    <i class="fa-solid fa-circle" style="color: var(--accent-red); font-size: 8px;"></i> LIVE
+                                </span>
+                            </div>
+                            <div class="live-overlay-footer">
+                                <span id="cam-stats-overlay">NO SIGNAL</span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="live-sidebar">
-                        <div class="card">
-                            <div>
-                                <div class="card-title">Statut</div>
-                                <div class="card-value" id="live-status" style="font-size:1rem;">Hors ligne</div>
-                            </div>
-                            <div class="card-desc"><i class="fa-solid fa-wifi"></i> Flux vidéo continu du microscope</div>
+                        <div class="live-sidebar-card">
+                            <div class="label"><i class="fa-regular fa-calendar"></i> Date</div>
+                            <div class="value lime" id="live-date">--</div>
                         </div>
-
-                        <div class="card">
-                            <div>
-                                <div class="card-title">Appareil</div>
-                                <div class="card-value" id="device-name" style="font-size:0.95rem;">Aucun</div>
-                            </div>
-                            <div class="card-desc"><i class="fa-solid fa-camera"></i> Microscope USB ou caméra système</div>
+                        <div class="live-sidebar-card">
+                            <div class="label"><i class="fa-regular fa-clock"></i> Session</div>
+                            <div class="value" id="live-session-duration">00:00:00</div>
                         </div>
-
-                        <div class="card">
-                            <div>
-                                <div class="card-title">Session</div>
-                                <div class="card-value" id="session-time" style="font-size:0.95rem;">00:00</div>
-                            </div>
-                            <div class="card-desc"><i class="fa-solid fa-clock"></i> Durée de la session active</div>
+                        <div class="live-sidebar-card">
+                            <div class="label"><i class="fa-solid fa-triangle-exclamation"></i> Statut</div>
+                            <div class="value green" id="live-session-status">En ligne</div>
                         </div>
-
-                        <div class="camera-controls">
-                            <button class="ctrl-btn ctrl-btn-green" id="btn-start" onclick="startCamera()">
-                                <i class="fa-solid fa-play"></i> Activer
-                            </button>
-                            <button class="ctrl-btn ctrl-btn-red" id="btn-stop" onclick="stopCamera()" disabled>
+                        <div class="live-controls">
+                            <button class="ctrl-btn ctrl-btn-red" id="btn-stop" onclick="stopCamera()">
                                 <i class="fa-solid fa-stop"></i> Désactiver
+                            </button>
+                            <button class="ctrl-btn ctrl-btn-green" id="btn-start" onclick="startCamera()" style="display:none;">
+                                <i class="fa-solid fa-play"></i> Activer
                             </button>
                         </div>
                     </div>
@@ -367,30 +465,67 @@
 
     <script>
         const videoElement = document.getElementById('videoElement');
-        const placeholder = document.getElementById('placeholder');
-        const startBtn = document.getElementById('btn-start');
-        const stopBtn = document.getElementById('btn-stop');
+        const noSignal = document.getElementById('no-signal');
         const statusBadge = document.getElementById('cam-status-badge');
         const statusDot = document.getElementById('cam-status-dot');
-        const camLabel = document.getElementById('cam-label');
-        const liveStatus = document.getElementById('live-status');
-        const deviceName = document.getElementById('device-name');
-        const sessionTime = document.getElementById('session-time');
-        const camResolution = document.getElementById('cam-resolution');
+        const camStatusText = document.getElementById('cam-status-text');
+        const camStatsOverlay = document.getElementById('cam-stats-overlay');
+        const camRecIndicator = document.getElementById('cam-rec-indicator');
+        const liveDateEl = document.getElementById('live-date');
+        const liveSessionDurationEl = document.getElementById('live-session-duration');
+        const liveSessionStatusEl = document.getElementById('live-session-status');
+        const btnStart = document.getElementById('btn-start');
+        const btnStop = document.getElementById('btn-stop');
 
         let mediaStream = null;
         let sessionStartTime = null;
-        let sessionTimer = null;
+        let sessionDurationInterval = null;
+        let keepAliveInterval = null;
 
-// Admin nav visibility
-        document.addEventListener('DOMContentLoaded', function() {
+        const SESSION_STORAGE_KEY = 'valeo_live_session_start';
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleDateString('fr-FR');
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('fr-FR');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function updateSessionTimer() {
+            if (!sessionStartTime) return;
+            const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+            const hours = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+            const seconds = String(elapsed % 60).padStart(2, '0');
+            liveSessionDurationEl.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        function startSessionTimer(startTime) {
+            sessionStartTime = startTime || Date.now();
+            localStorage.setItem(SESSION_STORAGE_KEY, String(sessionStartTime));
+            if (sessionDurationInterval) clearInterval(sessionDurationInterval);
+            sessionDurationInterval = setInterval(updateSessionTimer, 1000);
+            updateSessionTimer();
+        }
+
+        function stopSessionTimer() {
+            if (sessionDurationInterval) {
+                clearInterval(sessionDurationInterval);
+                sessionDurationInterval = null;
+            }
+            sessionStartTime = null;
+            localStorage.removeItem(SESSION_STORAGE_KEY);
+            liveSessionDurationEl.textContent = '00:00:00';
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
             const isAdmin = sessionStorage.getItem('valeo_isAdmin') === 'true';
             const navAdmin = document.getElementById('navAdmin');
             if (navAdmin && isAdmin) {
                 navAdmin.style.display = 'inline-flex';
             }
 
-            // User info display
             const userName = sessionStorage.getItem('valeo_userName') || 'Utilisateur';
             const userCode = sessionStorage.getItem('valeo_userCode') || '';
             const userEmail = sessionStorage.getItem('valeo_userEmail') || '';
@@ -400,7 +535,6 @@
             document.getElementById('dropdownRole').textContent = userRole || '—';
             document.getElementById('dropdownEmail').textContent = userEmail || '—';
 
-            // Account dropdown toggle
             const accountBtn = document.getElementById('accountBtn');
             const dropdown = document.getElementById('accountDropdown');
             if (accountBtn) {
@@ -415,6 +549,8 @@
                     e.stopPropagation();
                 });
             }
+
+            await startCamera();
         });
 
         function logout() {
@@ -425,15 +561,6 @@
             sessionStorage.removeItem('valeo_isAdmin');
             window.location.href = 'loading.html';
         }
-
-// Clock
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('current-date').textContent = now.toLocaleDateString('fr-FR');
-            document.getElementById('current-time').textContent = now.toLocaleTimeString('fr-FR');
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
 
         async function getPreferredLiveCameraId() {
             const devices = await navigator.mediaDevices.enumerateDevices();
@@ -449,114 +576,162 @@
                     : '');
         }
 
+        async function openMediaStream() {
+            const preferredCameraId = await getPreferredLiveCameraId();
+
+            const constraints = {
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            };
+
+            if (preferredCameraId) {
+                constraints.video.deviceId = { exact: preferredCameraId };
+            }
+
+            mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        }
+
         async function startCamera() {
+            if (mediaStream) {
+                return;
+            }
+
             try {
-                if (mediaStream) return;
-
-                // First request grants access so Windows/browser exposes camera labels.
-                mediaStream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
-                });
-
-                // Prefer the USB microscope when it is connected. The chosen
-                // device is remembered for later Live sessions.
-                const preferredCameraId = await getPreferredLiveCameraId();
-                const currentCameraId = mediaStream.getVideoTracks()[0]?.getSettings().deviceId;
-                if (preferredCameraId && preferredCameraId !== currentCameraId) {
-                    mediaStream.getTracks().forEach(track => track.stop());
-                    mediaStream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            deviceId: { exact: preferredCameraId },
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        },
-                        audio: false
-                    });
-                }
+                await openMediaStream();
 
                 videoElement.srcObject = mediaStream;
                 videoElement.style.display = 'block';
-                placeholder.style.display = 'none';
+                noSignal.style.display = 'none';
 
-                // Get device info
                 const track = mediaStream.getVideoTracks()[0];
                 const settings = track.getSettings();
-                deviceName.textContent = track.label || 'Caméra active';
+
                 if (settings.deviceId) {
                     localStorage.setItem('valeo_live_camera_id', settings.deviceId);
                 }
-                camResolution.textContent = `${settings.width}×${settings.height} @${Math.round(settings.frameRate || 30)}fps`;
 
-                // Update UI
                 statusBadge.className = 'badge badge-green';
                 statusDot.className = 'status-dot active';
-                camLabel.textContent = 'Caméra active';
-                liveStatus.textContent = 'En direct';
-                liveStatus.style.color = 'var(--accent-green)';
-                startBtn.disabled = true;
-                stopBtn.disabled = false;
+                camStatusText.textContent = 'Caméra active';
+                camRecIndicator.innerHTML = '<i class="fa-solid fa-circle" style="color: var(--accent-green); font-size: 8px;"></i> LIVE';
+                camStatsOverlay.textContent = `${settings.width}×${settings.height} @${Math.round(settings.frameRate || 30)}fps`;
 
-                // Session timer
-                sessionStartTime = Date.now();
-                if (sessionTimer) clearInterval(sessionTimer);
-                sessionTimer = setInterval(() => {
-                    if (sessionStartTime) {
-                        const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-                        const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
-                        const secs = String(elapsed % 60).padStart(2, '0');
-                        sessionTime.textContent = `${mins}:${secs}`;
-                    }
-                }, 1000);
+                const now = new Date();
+                liveDateEl.textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                liveSessionStatusEl.textContent = 'En ligne';
+                liveSessionStatusEl.className = 'value green';
+
+                btnStart.style.display = 'none';
+                btnStop.disabled = false;
+
+                const storedStart = localStorage.getItem(SESSION_STORAGE_KEY);
+                if (storedStart) {
+                    startSessionTimer(parseInt(storedStart, 10));
+                } else {
+                    startSessionTimer();
+                }
+
+                startKeepAlive();
 
             } catch (err) {
                 console.error('Erreur caméra:', err);
-                liveStatus.textContent = 'Erreur: ' + (err.message || 'Accès refusé');
-                liveStatus.style.color = 'var(--accent-red)';
-                alert('Impossible d\'accéder à la caméra. Vérifiez les permissions.');
+                statusBadge.className = 'badge badge-red';
+                statusDot.className = 'status-dot';
+                camStatusText.textContent = 'Erreur caméra';
+                noSignal.innerHTML = '<i class="fa-solid fa-video-slash"></i><span>ERREUR CAMERA</span><span style="font-size:0.75rem;">Vérifiez les permissions</span>';
+                noSignal.style.display = 'flex';
+                camStatsOverlay.textContent = 'NO SIGNAL';
+                liveSessionStatusEl.textContent = 'Erreur';
+                liveSessionStatusEl.className = 'value red';
+                btnStart.style.display = 'inline-flex';
+                btnStop.disabled = true;
+                stopSessionTimer();
+            }
+        }
+
+        function startKeepAlive() {
+            if (keepAliveInterval) clearInterval(keepAliveInterval);
+            keepAliveInterval = setInterval(() => {
+                if (!mediaStream) return;
+
+                const videoTrack = mediaStream.getVideoTracks()[0];
+                if (!videoTrack) return;
+
+                if (videoTrack.readyState === 'ended' || videoTrack.readyState === 'disabled') {
+                    console.warn('Flux vidéo interrompu, tentative de reconnexion...');
+                    attemptReconnect();
+                }
+            }, 2000);
+        }
+
+        async function attemptReconnect() {
+            try {
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    mediaStream = null;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                await openMediaStream();
+
+                videoElement.srcObject = mediaStream;
+                videoElement.style.display = 'block';
+                noSignal.style.display = 'none';
+
+                const track = mediaStream.getVideoTracks()[0];
+                const settings = track.getSettings();
+
+                if (settings.deviceId) {
+                    localStorage.setItem('valeo_live_camera_id', settings.deviceId);
+                }
+
+                statusBadge.className = 'badge badge-green';
+                statusDot.className = 'status-dot active';
+                camStatusText.textContent = 'Caméra active';
+                camRecIndicator.innerHTML = '<i class="fa-solid fa-circle" style="color: var(--accent-green); font-size: 8px;"></i> LIVE';
+                camStatsOverlay.textContent = `${settings.width}×${settings.height} @${Math.round(settings.frameRate || 30)}fps`;
+
+                console.log('Reconnexion réussie.');
+            } catch (err) {
+                console.error('Échec de la reconnexion:', err);
+                setTimeout(attemptReconnect, 1500);
             }
         }
 
         function stopCamera() {
+            stopSessionTimer();
+            if (keepAliveInterval) {
+                clearInterval(keepAliveInterval);
+                keepAliveInterval = null;
+            }
             if (mediaStream) {
                 mediaStream.getTracks().forEach(track => track.stop());
                 mediaStream = null;
             }
             videoElement.style.display = 'none';
-            placeholder.style.display = 'flex';
+            noSignal.style.display = 'flex';
+            noSignal.innerHTML = '<i class="fa-solid fa-video-slash"></i><span>CAMERA ARRETEE</span>';
 
-            // Update UI
             statusBadge.className = 'badge badge-red';
             statusDot.className = 'status-dot';
-            camLabel.textContent = 'Caméra éteinte';
-            liveStatus.textContent = 'Hors ligne';
-            liveStatus.style.color = 'var(--text)';
-            deviceName.textContent = 'Aucun';
-            camResolution.textContent = '-';
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
+            camStatusText.textContent = 'Caméra inactive';
+            camRecIndicator.innerHTML = '<i class="fa-solid fa-circle" style="color: var(--accent-red); font-size: 8px;"></i> LIVE';
+            camStatsOverlay.textContent = 'NO SIGNAL';
+            liveSessionStatusEl.textContent = 'Hors ligne';
+            liveSessionStatusEl.className = 'value';
 
-            if (sessionTimer) {
-                clearInterval(sessionTimer);
-                sessionTimer = null;
-            }
-            sessionStartTime = null;
-            sessionTime.textContent = '00:00';
+            btnStart.style.display = 'inline-flex';
+            btnStop.disabled = true;
         }
 
-        // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
             if (mediaStream) {
                 mediaStream.getTracks().forEach(track => track.stop());
             }
         });
-
-        // Start the continuous Live stream when this page is opened. The browser
-        // may ask for camera permission the first time only.
-        window.addEventListener('load', startCamera);
     </script>
 </body>
 </html>
