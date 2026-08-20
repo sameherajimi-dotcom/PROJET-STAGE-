@@ -1202,7 +1202,7 @@ app.put('/api/users/profile', (req, res) => {
 
 app.post('/api/alert-empty-balancelles', async (req, res) => {
     try {
-        const { produit, quantite, timestamp } = req.body || {};
+        const { produit, quantite, rendement, timestamp } = req.body || {};
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
