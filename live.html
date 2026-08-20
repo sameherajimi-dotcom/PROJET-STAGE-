@@ -387,6 +387,11 @@
                 <i class="fa-regular fa-clock"></i> <span id="current-time">--:--:--</span>
             </span>
             <span class="user-email" id="userDisplay" style="font-size:0.85rem;"></span>
+            <!-- Camera live indicator (shared across all pages) -->
+            <span id="global-cam-indicator" style="display:inline-flex;align-items:center;gap:0.5rem;font-size:0.8rem;padding-left:1rem;">
+                <i class="fa-solid fa-circle" style="color:#ff4444;font-size:8px;"></i>
+                <span id="globalCamText">Caméra OFF</span>
+            </span>
             <button class="account-btn" id="accountBtn" title="Mon compte"><i class="fa-regular fa-circle-user"></i></button>
             <div class="account-dropdown" id="accountDropdown">
                 <div class="dropdown-userinfo">
@@ -463,6 +468,7 @@
         <span>Version 1.0.0 | <a href="#">Support</a></span>
     </footer>
 
+    <script src="js/camera-status.js"></script>
     <script>
         const videoElement = document.getElementById('videoElement');
         const noSignal = document.getElementById('no-signal');
@@ -627,6 +633,9 @@
                 btnStart.style.display = 'none';
                 btnStop.disabled = false;
 
+                CameraStatusManager.setStatus('on');
+                CameraStatusManager.updateIndicator();
+
                 const storedStart = localStorage.getItem(SESSION_STORAGE_KEY);
                 if (storedStart) {
                     startSessionTimer(parseInt(storedStart, 10));
@@ -725,6 +734,9 @@
 
             btnStart.style.display = 'inline-flex';
             btnStop.disabled = true;
+
+            CameraStatusManager.setStatus('off');
+            CameraStatusManager.updateIndicator();
         }
 
         window.addEventListener('beforeunload', () => {

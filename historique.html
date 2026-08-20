@@ -1507,13 +1507,36 @@ function normalizeRecord(record) {
         record.nom_famille ??
         getFamily(product);
 
-    const date =
+    const dateRaw =
         record.date ??
         record.timestamp ??
         record.datetime ??
         record.dateHeure ??
         record.date_heure ??
         '';
+
+    const timeRaw =
+        record.heure ??
+        record.time ??
+        record.heureDetection ??
+        record.detectionTime ??
+        '';
+
+    let date = dateRaw;
+
+    if (dateRaw && timeRaw) {
+
+        const combined =
+            `${String(dateRaw).trim()} ${String(timeRaw).trim()}`;
+
+        const parsed =
+            parseDate(combined);
+
+        if (parsed) {
+            date = combined;
+        }
+
+    }
 
     const quantity =
         Number(
@@ -1902,6 +1925,52 @@ function updateSummary(data) {
 
 /* GRAPHIQUE */
 
+const CHART_COLORS = [
+    'rgba(185,255,0,0.75)',
+    'rgba(0,204,102,0.75)',
+    'rgba(219,185,92,0.75)',
+    'rgba(0,153,255,0.75)',
+    'rgba(255,68,68,0.75)',
+    'rgba(185,255,0,0.75)',
+    'rgba(0,204,102,0.75)',
+    'rgba(219,185,92,0.75)',
+    'rgba(0,153,255,0.75)',
+    'rgba(255,68,68,0.75)',
+    'rgba(185,255,0,0.75)',
+    'rgba(0,204,102,0.75)',
+    'rgba(219,185,92,0.75)',
+    'rgba(0,153,255,0.75)',
+    'rgba(255,68,68,0.75)',
+    'rgba(185,255,0,0.75)',
+    'rgba(0,204,102,0.75)',
+    'rgba(219,185,92,0.75)',
+    'rgba(0,153,255,0.75)',
+    'rgba(255,68,68,0.75)'
+];
+
+function getBarColor(product) {
+
+    let hash = 0;
+
+    for (
+        let i = 0;
+        i < product.length;
+        i++
+    ) {
+        hash =
+            product.charCodeAt(i) +
+                ((hash << 5) - hash);
+    }
+
+    const index =
+        Math.abs(
+            hash
+        ) % CHART_COLORS.length;
+
+    return CHART_COLORS[index];
+
+}
+
 function updateChart(data) {
 
     const quantities = {};
@@ -1929,6 +1998,22 @@ function updateChart(data) {
     const values =
         sorted.map(item => item[1]);
 
+    const backgroundColors =
+        labels.map(
+            getBarColor
+        );
+
+    const borderColors =
+        labels.map(
+            label =>
+                getBarColor(
+                    label
+                ).replace(
+                    '0.75)',
+                    '1)'
+                )
+        );
+
 
     if (!histChart) {
 
@@ -1955,10 +2040,10 @@ function updateChart(data) {
                                 data: values,
 
                                 backgroundColor:
-                                    'rgba(185,255,0,0.45)',
+                                    backgroundColors,
 
                                 borderColor:
-                                    '#B9FF00',
+                                    borderColors,
 
                                 borderWidth: 1,
 
@@ -2090,6 +2175,12 @@ function updateChart(data) {
 
         histChart.data.datasets[0].data =
             values;
+
+        histChart.data.datasets[0].backgroundColor =
+            backgroundColors;
+
+        histChart.data.datasets[0].borderColor =
+            borderColors;
 
         histChart.update();
 
@@ -2541,6 +2632,8 @@ document.addEventListener(
 );
 
 </script>
+
+    <script src="js/camera-status.js"></script>
 
 </body>
 </html>
