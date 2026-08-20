@@ -953,7 +953,7 @@
 
 
     <!-- KPI -->
-    <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+    <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); gap: 2rem;">
 
         <div class="kpi-card">
             <div>
@@ -966,6 +966,13 @@
             <div>
                 <div class="kpi-label">Rendement Moyen</div>
                 <div class="kpi-value lime" id="val-yield">0%</div>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">TRP</div>
+                <div class="kpi-value lime" id="val-trp">--</div>
             </div>
         </div>
 
@@ -1618,175 +1625,200 @@
             {
                 jigsTotal: 18,
                 famille: 'SWEET 400',
-                kits: 11
+                kits: 11,
+                cycleTime: 1.9
             },
 
         '9B':
             {
                 jigsTotal: 15,
                 famille: 'X52 PUSH BAR',
-                kits: 3
+                kits: 3,
+                cycleTime: 0.19
             },
 
         'XDD/7B':
             {
                 jigsTotal: 15,
                 famille: 'X52 PUSH BAR',
-                kits: 4
+                kits: 4,
+                cycleTime: 0.95
             },
 
         '8B':
             {
                 jigsTotal: 15,
                 famille: 'X52 PUSH BAR',
-                kits: 20
+                kits: 20,
+                cycleTime: 1.27
             },
 
         'FRAME':
             {
                 jigsTotal: 15,
                 famille: 'BEL',
-                kits: 3
+                kits: 3,
+                cycleTime: 1.27
             },
 
         'MATE':
             {
                 jigsTotal: 15,
                 famille: 'BEL',
-                kits: 7
+                kits: 7,
+                cycleTime: 0.09
             },
 
         'CMFB PUSH':
             {
                 jigsTotal: 12,
                 famille: 'CMFB-P',
-                kits: 3
+                kits: 3,
+                cycleTime: 1.58
             },
 
         'DECOPART':
             {
                 jigsTotal: 15,
                 famille: 'CMFB-P',
-                kits: 3
+                kits: 3,
+                cycleTime: 1.26
             },
 
         'D2CORATIVE FASCIA':
             {
                 jigsTotal: 18,
                 famille: 'OV512',
-                kits: 1
+                kits: 1,
+                cycleTime: 3.56
             },
 
         'ADAS':
             {
                 jigsTotal: 15,
                 famille: 'OV512',
-                kits: 8
+                kits: 8,
+                cycleTime: 0.48
             },
 
         'CAPACITIVE PLATE':
             {
                 jigsTotal: 15,
                 famille: 'OV512',
-                kits: 4
+                kits: 4,
+                cycleTime: 0.95
             },
 
         'TOGGLE':
             {
                 jigsTotal: 15,
                 famille: 'OV512',
-                kits: 3
+                kits: 3,
+                cycleTime: 1.26
             },
 
         'BEZEL':
             {
                 jigsTotal: 10,
                 famille: 'OV512',
-                kits: 4
+                kits: 4,
+                cycleTime: 1.43
             },
 
         'CAPACITIVE DUMMY':
             {
                 jigsTotal: 15,
                 famille: 'OV512',
-                kits: 4
+                kits: 4,
+                cycleTime: 0.95
             },
 
         'ON/OFF':
             {
                 jigsTotal: 15,
                 famille: 'OV512',
-                kits: 20
+                kits: 20,
+                cycleTime: 0.13
             },
 
         'HAZARD = Warning':
             {
                 jigsTotal: 18,
                 famille: 'P674',
-                kits: 12
+                kits: 12,
+                cycleTime: 0.31
             },
 
         'DECOR CAPA PUSH BLOCK':
             {
                 jigsTotal: 10,
                 famille: 'P674',
-                kits: 4
+                kits: 4,
+                cycleTime: 1.41
             },
 
         'CAP CAPACITIVE':
             {
                 jigsTotal: 10,
                 famille: 'P674',
-                kits: 4
+                kits: 4,
+                cycleTime: 1.41
             },
 
         'TCP':
             {
                 jigsTotal: 10,
                 famille: 'P674',
-                kits: 6
+                kits: 6,
+                cycleTime: 3.69
             },
 
         'DECOR FASCIA MAIN LHD':
             {
                 jigsTotal: 9,
                 famille: 'P674',
-                kits: 1
+                kits: 1,
+                cycleTime: 7.06
             },
 
         'E-TOGGLE':
             {
                 jigsTotal: 15,
                 famille: 'E-TOGGLE',
-                kits: 12
+                kits: 12,
+                cycleTime: 0.33
             },
 
         'LJC':
             {
                 jigsTotal: 15,
                 famille: 'LJC',
-                kits: 4
+                kits: 4,
+                cycleTime: 1.72
             },
 
         'X52 SQUARE':
             {
                 jigsTotal: 15,
                 famille: 'X52 SQUARE',
-                kits: 2
+                kits: 2,
+                cycleTime: 1.72
             },
 
         'MFL':
             {
                 jigsTotal: 15,
                 famille: 'MFL',
-                kits: 4
+                kits: 4,
+                cycleTime: 0
             },
 
         'HMI':
             {
                 jigsTotal: 15,
                 famille: 'HMI',
-                kits: 4
+                kits: 4,
+                cycleTime: 0
             }
 
     };
@@ -1827,6 +1859,358 @@
             jigsTotal: 0,
             famille: 'Inconnu',
             kits: 0
+        };
+
+    }
+
+
+    function parseReadingTimestamp(reading) {
+
+        if (!reading) {
+            return null;
+        }
+
+
+        if (
+            reading.timestamp &&
+            typeof reading.timestamp === 'string'
+        ) {
+
+            const ts =
+                Date.parse(
+                    reading.timestamp
+                );
+
+
+            if (!Number.isNaN(ts)) {
+                return ts;
+            }
+
+        }
+
+
+        const dateStr =
+            String(
+                reading.date || ''
+            ).trim();
+
+
+        const timeStr =
+            String(
+                reading.heure || ''
+            ).trim();
+
+
+        if (!dateStr) {
+            return null;
+        }
+
+
+        const dateParts =
+            dateStr.split(
+                '/'
+            );
+
+
+        const timeParts =
+            timeStr.split(
+                ':'
+            );
+
+
+        if (
+            dateParts.length < 3
+        ) {
+            return null;
+        }
+
+
+        const [
+            day,
+            month,
+            year
+        ] = dateParts;
+
+
+        const hour =
+            timeParts[0] || '00';
+
+
+        const minute =
+            timeParts[1] || '00';
+
+
+        const second =
+            timeParts[2] || '00';
+
+
+        const iso =
+            `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+
+
+        const ts =
+            Date.parse(
+                iso
+            );
+
+
+        if (Number.isNaN(ts)) {
+            return null;
+        }
+
+
+        return ts;
+
+    }
+
+
+    function calculateTRP() {
+
+        if (
+            !readings ||
+            readings.length === 0
+        ) {
+            return null;
+        }
+
+
+        const productReadings = {};
+
+
+        readings.forEach(
+            r => {
+
+                const product =
+                    String(
+                        r.produit || ''
+                    ).trim();
+
+
+                if (!product) {
+                    return;
+                }
+
+
+                if (
+                    !productReadings[
+                        product
+                    ]
+                ) {
+
+                    productReadings[
+                        product
+                    ] = {
+                        totalKits: 0,
+                        timestamps: [],
+                        readings: []
+                    };
+
+                }
+
+
+                const productInfo =
+                    getProductInfo(
+                        product
+                    );
+
+
+                const kitsPerJig =
+                    productInfo?.kits || 0;
+
+
+                const detectedKits =
+                    Number(
+                        r.quantite || r.jigs_detectees || 0
+                    ) * kitsPerJig;
+
+
+                productReadings[
+                    product
+                ].totalKits +=
+                    detectedKits;
+
+
+                const ts =
+                    parseReadingTimestamp(
+                        r
+                    );
+
+
+                if (ts !== null) {
+                    productReadings[
+                        product
+                    ].timestamps.push(
+                        ts
+                    );
+                }
+
+
+                productReadings[
+                    product
+                ].readings.push(
+                    r
+                );
+
+            }
+        );
+
+
+        const productEntries =
+            Object.entries(
+                productReadings
+            );
+
+
+        if (
+            productEntries.length === 0
+        ) {
+            return null;
+        }
+
+
+        let bestProduct = null;
+        let bestTRP = null;
+        let bestDetails = null;
+
+
+        for (
+            const [
+                product,
+                data
+            ]
+            of productEntries
+        ) {
+
+            const productInfo =
+                getProductInfo(
+                    product
+                );
+
+
+            const cycleTime =
+                productInfo?.cycleTime;
+
+
+            if (
+                !cycleTime ||
+                cycleTime <= 0
+            ) {
+                continue;
+            }
+
+
+            const kitsPerHour =
+                1 / cycleTime;
+
+
+            const timestamps =
+                data.timestamps;
+
+
+            if (
+                timestamps.length < 2
+            ) {
+                continue;
+            }
+
+
+            timestamps.sort(
+                (
+                    a,
+                    b
+                ) => a - b
+            );
+
+
+            const startTime =
+                timestamps[0];
+
+
+            const endTime =
+                timestamps[
+                    timestamps.length - 1
+                ];
+
+
+            const durationMs =
+                endTime - startTime;
+
+
+            if (
+                durationMs <= 0
+            ) {
+                continue;
+            }
+
+
+            const durationHours =
+                durationMs / 3600000;
+
+
+            const theoreticalKits =
+                kitsPerHour * durationHours;
+
+
+            if (
+                theoreticalKits <= 0
+            ) {
+                continue;
+            }
+
+
+            const trp =
+                (
+                    data.totalKits / theoreticalKits
+                ) * 100;
+
+
+            const clampedTRP =
+                Math.min(
+                    100,
+                    Math.max(
+                        0,
+                        trp
+                    )
+                );
+
+
+            if (
+                bestTRP === null ||
+                clampedTRP > bestTRP
+            ) {
+                bestTRP =
+                    clampedTRP;
+                bestProduct =
+                    product;
+                bestDetails = {
+                    product: product,
+                    cycleTime: cycleTime,
+                    kitsPerHour: kitsPerHour,
+                    startTime: startTime,
+                    endTime: endTime,
+                    durationHours: durationHours,
+                    totalKits: data.totalKits,
+                    theoreticalKits: theoreticalKits,
+                    trp: clampedTRP
+                };
+            }
+
+        }
+
+
+        if (
+            bestTRP === null
+        ) {
+            return null;
+        }
+
+
+        return {
+            trp: Math.round(
+                bestTRP
+            ),
+            product: bestProduct,
+            details: bestDetails
         };
 
     }
@@ -2989,6 +3373,33 @@
             );
 
 
+        const totalQuantity =
+            Object.entries(
+                productMap
+            )
+            .reduce(
+                (
+                    sum,
+                    [
+                        product,
+                        detectedJigs
+                    ]
+                ) => {
+                    const productInfo =
+                        getProductInfo(
+                            product
+                        );
+
+                    const kits =
+                        productInfo?.kits || 0;
+
+                    return sum + kits * detectedJigs;
+
+                },
+                0
+            );
+
+
         const productList =
             Object.entries(
                 productMap
@@ -3090,12 +3501,42 @@
 
         if (totalTargetEl)
             totalTargetEl.textContent =
-                totalJigsDetected || 0;
+                totalQuantity || 0;
 
 
         if (yieldEl)
             yieldEl.textContent =
                 `${avgYield}%`;
+
+
+        const trpResult =
+            calculateTRP();
+
+
+        const trpEl =
+            document.getElementById(
+                'val-trp'
+            );
+
+
+        if (trpEl) {
+
+            if (
+                trpResult &&
+                typeof trpResult.trp === 'number'
+            ) {
+
+                trpEl.textContent =
+                    `${trpResult.trp}%`;
+
+            } else {
+
+                trpEl.textContent =
+                    '--';
+
+            }
+
+        }
 
 
         const jigs =
@@ -4190,15 +4631,15 @@
 
 
         // Fin de cycle : 5 balancelles vides consécutives
+        const lastReading = readings[0];
+        const currentRendement = parseFloat(String(lastReading?.taux || '0').replace('%', ''));
+        const isLowRendement = !isNaN(currentRendement) && currentRendement < 90;
+
         if (
-            consecutiveEmptyCount >= 5 &&
+            isLowRendement &&
             currentProductName &&
             !window.__valeoAutoSaved
         ) {
-
-            const lastReading =
-                readings[0];
-
 
             fetch(
                 '/api/history',
@@ -4222,6 +4663,29 @@
                 }
             ).catch(() => {});
 
+            fetch(
+                '/api/alert-empty-balancelles',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+                    body: JSON.stringify({
+                        produit:
+                            currentProductName,
+                        quantite:
+                            window.productTotals[currentProductName] ||
+                            lastReading?.quantite ||
+                            0,
+                        rendement:
+                            currentRendement,
+                        timestamp:
+                            new Date().toISOString()
+                    })
+                }
+            ).catch(() => {});
+
             readings = [];
             window.productTotals = {};
             consecutiveEmptyCount = 0;
@@ -4235,7 +4699,7 @@
             updateChart();
 
             console.log(
-                '🔄 Fin de cycle: 5 balancelles vides détectées, passage à l\'historique'
+                `🔄 Fin de cycle: rendement ${currentRendement}% < 90%, passage à l'historique`
             );
 
         }

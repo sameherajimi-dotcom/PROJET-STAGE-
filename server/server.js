@@ -6,6 +6,7 @@ const fsSync = require('fs');
 const XLSX = require('xlsx');
 const { execFile } = require('child_process');
 const { promisify } = require('util');
+const nodemailer = require('nodemailer');
 
 const {
     getDatabase,
@@ -1195,6 +1196,54 @@ app.put('/api/users/profile', (req, res) => {
             success: false,
             message:
                 'Erreur serveur.'
+        });
+    }
+});
+
+app.post('/api/alert-empty-balancelles', async (req, res) => {
+    try {
+        const { produit, quantite, timestamp } = req.body || {};
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.VALEO_ALERT_EMAIL,
+                pass: process.env.VALEO_ALERT_PASSWORD
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.VALEO_ALERT_EMAIL || 'alerte@valeo.local',
+            to: 'sameher.ajimi@enis.tn',
+            subject: `Alerte Valeo : Rendement ${rendement || '?'}% < 90% - ${produit || 'Produit inconnu'}`,
+            text: `Alerte automatique Valeo.\n\nProduit : ${produit || 'N/A'}\nDernière quantité : ${quantite || 0}\nRendement : ${rendement || '?'}%\nHeure : ${timestamp || new Date().toLocaleString('fr-FR')}\n\nLe rendement est inférieur à 90%.`,
+            html: `<p>Alerte automatique <strong>Valeo</strong>.</p>
+<ul>
+<li><strong>Produit :</strong> ${produit || 'N/A'}</li>
+<li><strong>Dernière quantité :</strong> ${quantite || 0}</li>
+<li><strong>Rendement :</strong> ${rendement || '?'}%</li>
+<li><strong>Heure :</strong> ${timestamp || new Date().toLocaleString('fr-FR')}</li>
+</ul>
+<p>Le rendement est inférieur à 90%.</p>`
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.json({
+            success: true,
+            message:
+                'Alerte email envoyée.'
+        });
+    } catch (error) {
+        console.error(
+            'Erreur envoi alerte email:',
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message:
+                'Impossible d\'envoyer l\'alerte email.'
         });
     }
 });
